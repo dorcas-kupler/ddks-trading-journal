@@ -910,31 +910,44 @@ function saveRisk(){
 function renderLinks(){
   document.getElementById('main').innerHTML=`
     <h1>Share & Install</h1>
-    <div class="sub">Open the shared web link in a browser, then install DDK's Trading Journal as an app on your phone or computer.</div>
+    <div class="sub">Share your journal link or install DDK's Trading Journal as an app.</div>
+
+    <div class="panel">
+      <h2>🔗 Share the Journal</h2>
+      <div class="note">Share the live DDK's Trading Journal link with someone.</div>
+      <button class="btn" style="margin-top:12px" onclick="copyLink()">📤 Share Journal Link</button>
+      <div id="copyMsg" class="note" style="margin-top:10px"></div>
+    </div>
+
     <div class="panel">
       <h2>📲 Install the App</h2>
-      <div class="note">When this journal is hosted on a secure web address (HTTPS), supported browsers can install it as a standalone app. Your friends do not need to download the source files first.</div>
-      <button id="pwaInstallBtn" class="btn" style="display:none;margin-top:12px" onclick="installDDKApp()">⬇️ Install DDK's Trading Journal</button>
-      <div class="note" style="margin-top:10px">On phones, use the browser menu and choose <b>Add to Home Screen</b> or <b>Install App</b> if the browser does not show the button automatically.</div>
+      <div class="note">Install DDK's Trading Journal as an app on your phone or computer.</div>
+      <button id="pwaInstallBtn" class="btn" style="margin-top:12px" onclick="installDDKApp()">⬇️ Install DDK's Trading Journal</button>
+      <div class="note" style="margin-top:10px">
+        If the button does not work, open the Edge menu and choose <b>Apps → Install DDK's Trading Journal</b>.
+      </div>
     </div>
+
     <div class="panel">
       <h2>💻 Your Private App</h2>
-      <div class="note">Use the launcher included with this app folder to open the journal in a clean app-style browser window. Your journal data is stored locally on this PC.</div>
-      <div class="note" style="margin-top:10px">For privacy, keep the whole app folder somewhere only you and your trusted friends can access.</div>
+      <div class="note">Your journal data is stored locally on this device.</div>
+      <div class="note" style="margin-top:10px">For privacy, keep your app folder somewhere only you and your trusted friends can access.</div>
     </div>
+
     <div class="grid2">
       <div class="panel">
         <h2>🚀 How to Open</h2>
-        <div class="note">Double-click <b>Open DDK Trading Journal.bat</b> in the downloaded folder. If your browser supports app mode, it will open without the normal browser tabs and address bar.</div>
+        <div class="note">Open DDK's Trading Journal from your desktop or browser.</div>
       </div>
       <div class="panel">
         <h2>📌 Put It on Your Desktop</h2>
-        <div class="note">Right-click the launcher → Show more options → Send to → Desktop (create shortcut). Then you can open the journal from your desktop like a normal app.</div>
+        <div class="note">Right-click the launcher → Show more options → Send to → Desktop (create shortcut).</div>
       </div>
     </div>
+
     <div class="panel">
       <h2>🔒 Offline & Private</h2>
-      <div class="note">The core journal works offline. Your trades, checklists, rules, risk settings and other saved information use this browser's local storage. Nothing is sent to a public website by this standalone version.</div>
+      <div class="note">Your trades, checklists, rules and risk settings are stored locally in your browser.</div>
     </div>
   `;
 }
