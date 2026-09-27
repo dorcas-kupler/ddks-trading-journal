@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" style="color-scheme: dark;"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DDK's Trading Journal">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
+<meta name="application-name" content="DDK's Trading Journal">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="description" content="Private offline trading journal">
+<title>DDK's Trading Journal</title>
+<style>
+:root{
+  --bg:#0a0e14; --panel:#0f1621; --panel2:#111a27; --border:#1e2a3a;
+  --text:#e6edf5; --muted:#8a97a8; --accent:#22d3ee; --accent2:#38bdf8;
+  --green:#22c55e; --red:#ef4444; --orange:#f59e0b;
+  --crit:#f87171; --imp:#fbbf24;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+#app{display:flex;min-height:100vh;}
+.sidebar{width:230px;flex:none;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:16px 12px;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.brand{font-weight:700;font-size:16px;color:var(--accent);padding:0 4px;}
+.pairbox{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;}
+.pairbox label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+select,input,textarea,button{font-family:inherit;}
+#pairSelect{width:100%;margin-top:6px;background:var(--bg);color:var(--text);border:1px solid var(--border);
+  border-radius:6px;padding:7px;font-size:14px;}
+.addpair{margin-top:8px;width:100%;background:transparent;border:1px dashed var(--border);color:var(--muted);
+  border-radius:6px;padding:6px;font-size:12px;cursor:pointer;}
+.addpair:hover{color:var(--accent);border-color:var(--accent);}
+nav{display:flex;flex-direction:column;gap:2px;}
+.navbtn{text-align:left;background:transparent;border:none;color:var(--muted);padding:10px 12px;border-radius:8px;
+  font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.navbtn:hover{background:var(--panel2);color:var(--text);}
+.navbtn.active{background:rgba(34,211,238,.12);color:var(--accent);font-weight:600;}
+main{flex:1;padding:22px 26px;overflow-x:hidden;min-width:0;}
+h1{font-size:20px;margin:0 0 4px;}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+.card .val{font-size:22px;font-weight:700;margin-top:6px;}
+.pos{color:var(--green);} .neg{color:var(--red);}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px;}
+.panel h2{font-size:15px;margin:0 0 12px;color:var(--accent2);}
+.grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr;} .sidebar{width:190px;} main{padding:16px;}}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:left;}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;font-size:11px;}
+.calgrid .dow{color:var(--muted);text-align:center;padding:4px 0;}
+.calcell{background:var(--panel2);border:1px solid var(--border);border-radius:6px;min-height:52px;padding:4px;}
+.calcell.win{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.4);}
+.calcell.loss{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);}
+.calcell .d{color:var(--muted);font-size:10px;}
+.calcell .p{font-weight:700;margin-top:2px;}
+.calcell.win .p{color:var(--green);} .calcell.loss .p{color:var(--red);}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:11px;color:var(--muted);}
+.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:7px 9px;font-size:13px;}
+.btn{background:var(--accent);color:#00212b;border:none;border-radius:7px;padding:8px 14px;font-size:13px;
+  font-weight:600;cursor:pointer;}
+.btn:hover{filter:brightness(1.1);}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn.danger{background:var(--red);color:#fff;}
+.checklist-section{background:var(--panel);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden;}
+.cl-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--panel2);}
+.cl-head b{font-size:14px;}
+.cl-head span{color:var(--muted);font-size:12px;}
+.cl-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--border);font-size:13px;}
+.cl-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);}
+.cl-item .txt{flex:1;}
+.cl-item .txt.done{text-decoration:line-through;color:var(--muted);}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.03em;}
+.tag.crit{color:var(--crit);background:rgba(248,113,113,.12);}
+.tag.imp{color:var(--imp);background:rgba(251,191,36,.12);}
+.iconbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;}
+.iconbtn:hover{color:var(--accent);}
+.golden{background:linear-gradient(180deg,rgba(239,68,68,.08),transparent);border:1px solid rgba(239,68,68,.35);
+  border-radius:12px;padding:16px;margin-bottom:18px;}
+.golden h2{color:var(--crit);margin:0 0 10px;font-size:15px;}
+.golden ul{margin:0;padding-left:18px;font-size:13px;line-height:2;}
+.rulebox{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.ruleitem{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px;}
+.thumb{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);aspect-ratio:4/3;}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb .rm{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:5px;
+  width:22px;height:22px;cursor:pointer;font-size:12px;}
+.uploadbox{border:1.5px dashed var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--muted);
+  font-size:12px;cursor:pointer;}
+.uploadbox:hover{border-color:var(--accent);color:var(--accent);}
+.riskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+.note{font-size:12px;color:var(--muted);line-height:1.8;background:var(--panel2);border-radius:8px;padding:12px;}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:30px 0;}
+.pillrow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.pill{background:var(--panel2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;}
+.pill.active{border-color:var(--accent);color:var(--accent);}
+body::before{content:"Patience + Discipline + Consistency = Success";position:fixed;inset:0;display:flex;
+  align-items:center;justify-content:center;text-align:center;font-size:44px;font-weight:800;color:var(--text);
+  opacity:.045;transform:rotate(-18deg);pointer-events:none;z-index:0;padding:0 40px;line-height:1.3;letter-spacing:.02em;}
+#app,.authwrap{position:relative;z-index:1;}
+.avatarrow{display:flex;align-items:center;gap:10px;padding:0 4px;}
+.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--panel2);border:1px solid var(--border);
+  flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);cursor:pointer;overflow:hidden;}
+.avatarname{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logoutbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;}
+.logoutbtn:hover{color:var(--red);}
+.authwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.authcard{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:30px;width:100%;max-width:360px;}
+.authcard h1{font-size:18px;color:var(--accent);margin:0 0 4px;text-align:center;}
+.authcard .sub{text-align:center;margin-bottom:20px;}
+.authavatar{width:76px;height:76px;border-radius:50%;margin:0 auto 16px;background:var(--panel2);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--muted);overflow:hidden;cursor:pointer;}
+.authavatar img{width:100%;height:100%;object-fit:cover;}
+.authfield{margin-bottom:12px;display:flex;flex-direction:column;gap:5px;}
+.authfield label{font-size:11px;color:var(--muted);}
+.authfield input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 10px;font-size:13px;}
+.autherr{color:var(--red);font-size:12px;margin-bottom:10px;text-align:center;}
+.dashtop{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.quotecard{background:linear-gradient(160deg,rgba(34,211,238,.10),var(--panel));border:1px solid var(--border);
+  border-radius:12px;padding:16px;max-width:320px;}
+.quotecard .q{font-size:13px;font-style:italic;line-height:1.5;}
+.quotecard .a{margin-top:8px;font-size:11px;color:var(--muted);text-align:right;}
+.sessrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;}
+.sesscell{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+.sesscell .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+.sesscell.open .dot{background:var(--green);} .sesscell.closed .dot{background:var(--muted);}
+.linkrow{display:flex;flex-direction:column;gap:8px;}
+.linkrow a{color:var(--accent2);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:8px;
+  background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;}
+.linkrow a:hover{border-color:var(--accent);}
+@media(max-width:900px){
+  .cards{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:640px){
+  body::before{font-size:24px;}
+  #app{flex-direction:column;}
+  .sidebar{width:100%;height:auto;position:sticky;top:0;flex-direction:row;flex-wrap:wrap;padding:10px;gap:8px;z-index:5;}
+  .brand{width:100%;font-size:14px;}
+  .avatarrow{width:100%;}
+  .pairbox{flex:1 1 100%;}
+  nav{flex-direction:row;overflow-x:auto;width:100%;gap:4px;-webkit-overflow-scrolling:touch;}
+  .navbtn{white-space:nowrap;padding:8px 10px;font-size:12px;}
+  main{padding:14px;}
+  .cards{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .card{padding:10px;} .card .val{font-size:18px;}
+  .dashtop{flex-direction:column;}
+  .quotecard{max-width:100%;}
+  .row{flex-direction:column;align-items:stretch;}
+  .field input,.field select,.field textarea{font-size:16px;}
+  h1{font-size:17px;}
+  .calgrid{font-size:9px;}
+  .calcell{min-height:38px;padding:2px;}
+  .authcard{padding:22px;}
+}
+.panel,.card,.checklist-section,.golden,.rulebox,.authcard,.quotecard{position:relative;}
+.panel::after,.card::after,.checklist-section::after,.golden::after,.rulebox::after,.authcard::after,.quotecard::after{
+  content:"DDK";position:absolute;bottom:4px;right:8px;font-size:9px;font-weight:800;letter-spacing:.06em;
+  color:var(--accent);opacity:.16;pointer-events:none;
+}
+</style>
+</head>
+<body>
+<div id="root">
+    <div id="app">
+      <aside class="sidebar">
+        <div class="brand">📊 DDK's Trading Journal</div>
+        <div class="avatarrow">
+          <label class="avatar" for="sideAvaInput">👤</label>
+          <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
+          <div class="avatarname">DDK</div>
+          <button class="logoutbtn" onclick="logout()">Log out</button>
+        </div>
+        <div class="pairbox">
+          <label>Currency Pair</label>
+          <select id="pairSelect"><optgroup label="Majors"><option value="EUR/USD">EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="USD/JPY">USD/JPY</option><option value="USD/CHF">USD/CHF</option><option value="USD/CAD">USD/CAD</option><option value="AUD/USD">AUD/USD</option><option value="NZD/USD">NZD/USD</option></optgroup><optgroup label="Minors"><option value="EUR/GBP">EUR/GBP</option><option value="EUR/JPY">EUR/JPY</option><option value="EUR/CHF">EUR/CHF</option><option value="EUR/AUD">EUR/AUD</option><option value="EUR/CAD">EUR/CAD</option><option value="EUR/NZD">EUR/NZD</option><option value="GBP/JPY">GBP/JPY</option><option value="GBP/CHF">GBP/CHF</option><option value="GBP/AUD">GBP/AUD</option><option value="GBP/CAD">GBP/CAD</option><option value="GBP/NZD">GBP/NZD</option><option value="AUD/JPY">AUD/JPY</option><option value="AUD/CAD">AUD/CAD</option><option value="AUD/CHF">AUD/CHF</option><option value="AUD/NZD">AUD/NZD</option><option value="CAD/JPY">CAD/JPY</option><option value="CHF/JPY">CHF/JPY</option><option value="NZD/JPY">NZD/JPY</option><option value="NZD/CAD">NZD/CAD</option><option value="NZD/CHF">NZD/CHF</option></optgroup><optgroup label="Exotics"><option value="USD/TRY">USD/TRY</option><option value="USD/ZAR">USD/ZAR</option><option value="USD/MXN">USD/MXN</option><option value="USD/SEK">USD/SEK</option><option value="USD/NOK">USD/NOK</option><option value="USD/SGD">USD/SGD</option><option value="USD/HKD">USD/HKD</option><option value="USD/PLN">USD/PLN</option><option value="USD/THB">USD/THB</option><option value="USD/DKK">USD/DKK</option><option value="EUR/TRY">EUR/TRY</option><option value="EUR/ZAR">EUR/ZAR</option><option value="GBP/ZAR">GBP/ZAR</option></optgroup><optgroup label="Metals"><option value="XAUUSD">XAUUSD</option><option value="XAGUSD">XAGUSD</option><option value="XPTUSD">XPTUSD</option><option value="XPDUSD">XPDUSD</option></optgroup><optgroup label="Crypto"><option value="BTC/USD">BTC/USD</option><option value="ETH/USD">ETH/USD</option><option value="XRP/USD">XRP/USD</option><option value="LTC/USD">LTC/USD</option><option value="BNB/USD">BNB/USD</option><option value="SOL/USD">SOL/USD</option><option value="DOGE/USD">DOGE/USD</option><option value="ADA/USD">ADA/USD</option><option value="AVAX/USD">AVAX/USD</option><option value="DOT/USD">DOT/USD</option><option value="MATIC/USD">MATIC/USD</option><option value="LINK/USD">LINK/USD</option></optgroup></select>
+          <button class="addpair" id="addPairBtn">+ Add Pair</button>
+        </div>
+        <nav id="navBtns"><button class="navbtn">📊 Dashboard</button><button class="navbtn">📓 Journal</button><button class="navbtn">📈 Statistics</button><button class="navbtn">✅ To-Do</button><button class="navbtn">⚠️ Rules</button><button class="navbtn">🖼️ Trade Review</button><button class="navbtn">🧮 Risk Calculator</button><button class="navbtn active">🔗 Share &amp; Install</button></nav>
+      </aside>
+      <main id="main">
+    <h1>Share &amp; Install</h1>
+    <div class="sub">Get this journal onto any device — share the link, or save your own offline copy</div>
+    <div class="panel">
+      <h2>🔗 Your Journal Link</h2>
+      <div class="row" style="align-items:center">
+        <input type="text" id="linkBox" value="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw" readonly="" style="flex:1;min-width:220px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;font-size:13px;">
+        <button class="btn" onclick="copyLink()">Copy Link</button>
+      </div>
+      <div id="copyMsg" style="font-size:12px;color:var(--green);margin-top:6px;height:14px;"></div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>📱 Scan to Open</h2>
+        <div id="qrcode" style="display:flex;justify-content:center;align-items:center;min-height:180px;padding:10px;background:#fff;border-radius:10px;width:fit-content;" title="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw"><canvas width="160" height="160" style="display: none;"></canvas><img src="data:image/png;base64,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" style="display: block;"></div>
+        <div class="note" style="margin-top:10px">Scan with a phone camera to open the journal instantly.</div>
+      </div>
+      <div class="panel">
+        <h2>⬇️ Download Offline Copy</h2>
+        <div class="note">Save a standalone file to this device. Once downloaded, it opens straight from your files or desktop — no link, no internet needed to log your trades.</div>
+        <button class="btn" style="margin-top:12px" onclick="downloadAppCopy()">Download Journal (.html)</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>📲 Add to Home Screen / Desktop</h2>
+      <div class="grid2">
+        <div>
+          <b style="font-size:13px">On Android</b>
+          <div class="note" style="margin-top:6px">Open the link in Chrome → tap the ⋮ menu → "Add to Home screen" or "Install app".</div>
+        </div>
+        <div>
+          <b style="font-size:13px">On iPhone</b>
+          <div class="note" style="margin-top:6px">Open the link in Safari → tap the Share icon → "Add to Home Screen".</div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <b style="font-size:13px">On PC / Mac</b>
+        <div class="note" style="margin-top:6px">Download the .html file above and pin it to your desktop or taskbar — double-click any time to open it, fully offline.</div>
+      </div>
+    </div>
+  </main>
+    </div></div>
+
+<script>
+const APP_LINK="DDKs Trading Journal (this PC)";
+const CHANNEL_NAME="DDK's Trading Journal";
+const QUOTES=[
+  ["The market is a device for transferring money from the impatient to the patient.","Warren Buffett"],
+  ["Risk comes from not knowing what you are doing.","Warren Buffett"],
+  ["Amateurs think about how much money they can make. Professionals think about how much money they could lose.","Jack Schwager"],
+  ["The goal of a successful trader is to make the best trades. Money is secondary.","Alexander Elder"],
+  ["In trading, the impossible happens about twice a year.","Henri Simoes"],
+  ["Plan your trade and trade your plan.","Trading proverb"],
+  ["The trend is your friend until it ends.","Ed Seykota"],
+  ["It's not whether you're right or wrong, but how much money you make when you're right and how much you lose when you're wrong.","George Soros"],
+  ["Discipline is choosing between what you want now and what you want most.","Trading wisdom"],
+  ["Patience + Discipline + Consistency = Success.","DDK's Trading Journal"],
+  ["Cut your losses short and let your winners run.","Trading proverb"],
+  ["The four most dangerous words in investing are: this time it's different.","Sir John Templeton"],
+  ["Losing an opportunity is better than losing capital.","Trading wisdom"],
+  ["Every trade is just one of the next thousand.","Anonymous"],
+  ["Revenge trading is how small losses become big ones.","Trading wisdom"],
+];
+function quoteOfDay(){
+  const start=new Date(new Date().getFullYear(),0,0);
+  const diff=new Date()-start;
+  const dayOfYear=Math.floor(diff/86400000);
+  return QUOTES[dayOfYear % QUOTES.length];
+}
+function sessionStatus(){
+  const h=new Date().getUTCHours();
+  const inRange=(s,e)=> s<e ? (h>=s&&h<e) : (h>=s||h<e);
+  return [
+    {name:'Sydney',open:inRange(21,6)},
+    {name:'Tokyo',open:inRange(23,8)},
+    {name:'London',open:inRange(7,16)},
+    {name:'New York',open:inRange(12,21)},
+  ];
+}
+function loadAuth(){ try{return JSON.parse(localStorage.getItem('tj_auth'));}catch(e){return null;} }
+function saveAuthLocal(a){ localStorage.setItem('tj_auth', JSON.stringify(a)); }
+function saveAuth(a){ saveAuthLocal(a); pushRemote(); }
+let AUTHED= !!loadAuth();
+let PENDING_AVATAR='';
+
+function renderAuthScreen(){
+  const root=document.getElementById('root');
+  root.innerHTML=`<div class="authwrap"><div class="authcard">
+    <div class="authavatar" id="avaClick">${PENDING_AVATAR?`<img src="${PENDING_AVATAR}">`:'👤'}</div>
+    <input type="file" id="avaInput" accept="image/*" style="display:none">
+    <h1>${CHANNEL_NAME}</h1>
+    <div class="sub">Create your account</div>
+    <div class="authfield"><label>Name</label><input type="text" id="setName" placeholder="e.g. DDK"></div>
+    <div class="authfield"><label>Password</label><input type="password" id="setPass"></div>
+    <div class="authfield"><label>Confirm password</label><input type="password" id="setPass2"></div>
+    <div class="autherr" id="authErr"></div>
+    <button class="btn" style="width:100%" onclick="doCreateAccount()">Create Account</button>
+  </div></div>`;
+  const passInput=document.getElementById('setPass2');
+  passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doCreateAccount();});
+  const avaClick=document.getElementById('avaClick');
+  avaClick.onclick=()=>document.getElementById('avaInput').click();
+  document.getElementById('avaInput').onchange=function(){
+    const f=this.files[0]; if(!f)return;
+    const r=new FileReader(); r.onload=e=>{PENDING_AVATAR=e.target.result; renderAuthScreen();}; r.readAsDataURL(f);
+  };
+}
+function doCreateAccount(){
+  const name=document.getElementById('setName').value.trim();
+  const p1=document.getElementById('setPass').value, p2=document.getElementById('setPass2').value;
+  if(!name){document.getElementById('authErr').textContent='Please enter your name.';return;}
+  if(!p1){document.getElementById('authErr').textContent='Please set a password.';return;}
+  if(p1!==p2){document.getElementById('authErr').textContent='Passwords do not match.';return;}
+  saveAuth({name, password:p1, avatar:PENDING_AVATAR});
+  AUTHED=true; boot();
+}
+function logout(){ localStorage.removeItem('tj_auth'); AUTHED=false; renderAuthScreen(); }
+function updateAvatar(files){
+  const f=files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{ const a=loadAuth()||{}; a.avatar=e.target.result; saveAuth(a); boot(); };
+  r.readAsDataURL(f);
+}
+
+function renderShell(){
+  const auth=loadAuth()||{};
+  document.getElementById('root').innerHTML=`
+    <div id="app">
+      <aside class="sidebar">
+        <div class="brand">📊 ${CHANNEL_NAME}</div>
+        <div class="avatarrow">
+          <label class="avatar" for="sideAvaInput">${auth.avatar?`<img src="${auth.avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</label>
+          <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
+          <div class="avatarname">${auth.name||'Trader'}</div>
+          <button class="logoutbtn" onclick="logout()">Log out</button>
+        </div>
+        <div class="pairbox">
+          <label>Currency Pair</label>
+          <select id="pairSelect"></select>
+          <button class="addpair" id="addPairBtn">+ Add Pair</button>
+        </div>
+        <nav id="navBtns"></nav>
+      </aside>
+      <main id="main"></main>
+    </div>`;
+}
+function boot(){
+  if(!AUTHED){ renderAuthScreen(); return; }
+  renderShell();
+  renderAll();
+}
+
+const TABS=[
+  ['dashboard','📊 Dashboard'],['journal','📓 Journal'],['statistics','📈 Statistics'],
+  ['todo','✅ To-Do'],['rules','⚠️ Rules'],['review','🖼️ Trade Review'],['risk','🧮 Risk Calculator'],
+  ['links','🔗 Share & Install']
+];
+const DEFAULT_TODO = {
+  premarket:{title:'Pre-Market (8:00–15:30 CET)',items:[
+    ['Review overnight range (high / low / volume)','crit'],
+    ['Draw key zones: supports / resistances from yesterday','crit'],
+    ['Check technical levels: VWAP, POC, high/low D-1','crit'],
+    ['Analyze trend on H1 / H4','imp'],
+    ["Read today's economic calendar",'crit'],
+    ['Note times to avoid (ex: 2:30PM / 4:00PM CET)','imp'],
+    ["Adapt risk based on today's news",'crit'],
+    ['Prepare probable scenarios (Plan A / B)','imp'],
+    ['Check previous day high, close, low — trade with the close (above=buy bias, below=sell bias)','imp'],
+    ['Mark key support/resistance levels','crit'],
+    ['Confirm top-down alignment: 4H → 30min → 5min','crit'],
+    ['Plot 50 EMA and Fibonacci levels','imp'],
+  ]},
+  mental:{title:'Mental Preparation',items:[
+    ['Did I sleep well? Am I focused?','crit'],
+    ['Do I have external distractions? (Yes = no trading)','crit'],
+    ['I commit to respect 100% of my trading plan','crit'],
+  ]},
+  during:{title:'During Session (15:30–22:00 CET)',items:[
+    ['I only trade validated A+ setups','crit'],
+    ['Confluence confirmation: zone + signal + volume','crit'],
+    ['Correct position size / Stop / Target set','crit'],
+    ['Observe market flow: Tape, DOM, Volume, Structure','imp'],
+    ['No FOMO / revenge trading','crit'],
+    ['Mandatory break after 3 trades or a losing trade','crit'],
+    ["If no clear setup → I don't trade",'crit'],
+    ['5min signal aligns with 4H direction before entry','crit'],
+    ['Risk to reward at least 1:2','imp'],
+  ]},
+  postmarket:{title:'Post-Market (22:00+)',items:[
+    ['Did I respect my plan? Why?','crit'],
+    ['Trade summary: context / entry / exit / mental','crit'],
+    ['Screenshots of best or worst trades','imp'],
+    ['One lesson to remember from today','crit'],
+    ['Prepare levels for tomorrow (zones / bias)','imp'],
+  ]},
+};
+const DEFAULT_GOLDEN_RULES=[
+  'Never trade without a prepared plan',
+  'Stop loss ALWAYS defined before entry',
+  'Maximum 4 trades per day',
+  'Stop trading after 2 consecutive losses or daily loss limit hit',
+  'Mandatory break after a loss',
+  'No trading in emotionally unstable state',
+];
+const DEFAULT_RULES=[
+  '1. Session & Pair selection',
+  '2. News Check',
+  '3. Top-Down Chart Analysis',
+  '4. Risk Management',
+  '5. Trade limits: 4 trades a day, stop trading after 2 consecutive losses or daily loss limit',
+  '6. Psychology: Discipline, Patience and Thinking in possibilities',
+];
+const DEFAULT_PAIRS=['XAUUSD','GBP/JPY','EUR/USD'];
+const PAIR_CATALOG={
+  'Majors':['EUR/USD','GBP/USD','USD/JPY','USD/CHF','USD/CAD','AUD/USD','NZD/USD'],
+  'Minors':['EUR/GBP','EUR/JPY','EUR/CHF','EUR/AUD','EUR/CAD','EUR/NZD','GBP/JPY','GBP/CHF','GBP/AUD','GBP/CAD','GBP/NZD','AUD/JPY','AUD/CAD','AUD/CHF','AUD/NZD','CAD/JPY','CHF/JPY','NZD/JPY','NZD/CAD','NZD/CHF'],
+  'Exotics':['USD/TRY','USD/ZAR','USD/MXN','USD/SEK','USD/NOK','USD/SGD','USD/HKD','USD/PLN','USD/THB','USD/DKK','EUR/TRY','EUR/ZAR','GBP/ZAR'],
+  'Metals':['XAUUSD','XAGUSD','XPTUSD','XPDUSD'],
+  'Crypto':['BTC/USD','ETH/USD','XRP/USD','LTC/USD','BNB/USD','SOL/USD','DOGE/USD','ADA/USD','AVAX/USD','DOT/USD','MATIC/USD','LINK/USD'],
+};
+function ensurePair(name){ if(!STATE.data[name]) STATE.data[name]=freshPairData(); }
+
+function freshPairData(){
+  const todos={};
+  for(const k in DEFAULT_TODO){
+    todos[k]={title:DEFAULT_TODO[k].title,
+      items:DEFAULT_TODO[k].items.map((it,i)=>({id:k+'_'+i+'_'+Date.now(),text:it[0],sev:it[1],done:false}))};
+  }
+  return {
+    trades:[],
+    todos, todoDate:new Date().toDateString(),
+    rules:[...DEFAULT_RULES],
+    goldenRules:[...DEFAULT_GOLDEN_RULES],
+    images:{good:[],bad:[]},
+    risk:{equity:'',riskPct:'',expected:'',pips:''}
+  };
+}
+function loadState(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem('tj_state_v1'));}catch(e){}
+  if(!s){
+    s={current:DEFAULT_PAIRS[0],data:{},customPairs:[]};
+    DEFAULT_PAIRS.forEach(p=>s.data[p]=freshPairData());
+  }
+  if(!s.customPairs) s.customPairs=[];
+  if(!s.data[s.current]) s.data[s.current]=freshPairData();
+  for(const p in s.data){ if(!s.data[p].goldenRules) s.data[p].goldenRules=[...DEFAULT_GOLDEN_RULES]; }
+  return s;
+}
+let STATE=loadState();
+let TAB='dashboard';
+function save(){ localStorage.setItem('tj_state_v1', JSON.stringify(STATE)); pushRemote(); }
+
+// ---- Cross-device sync (via db/user capabilities, when signed in) ----
+let DB=null, DBDOC=null, UID=null, SYNCED=false, pushTimer=null;
+function buildSyncPayload(){
+  const a=loadAuth()||{};
+  const auth={name:a.name||'', email:a.email||'', password:a.password||''};
+  const state={current:STATE.current, customPairs:STATE.customPairs||[], data:{}};
+  for(const p in STATE.data){
+    const d=STATE.data[p];
+    state.data[p]={trades:d.trades, todos:d.todos, todoDate:d.todoDate, rules:d.rules, goldenRules:d.goldenRules, risk:d.risk};
+  }
+  return {auth, state};
+}
+function applySyncPayload(payload){
+  if(!payload) return;
+  if(payload.auth){
+    const local=loadAuth()||{};
+    saveAuthLocal(Object.assign({}, local, payload.auth));
+  }
+  if(payload.state){
+    STATE.current=payload.state.current||STATE.current;
+    STATE.customPairs=payload.state.customPairs||STATE.customPairs||[];
+    for(const p in payload.state.data){
+      const remote=payload.state.data[p];
+      const localImages=(STATE.data[p] && STATE.data[p].images) || {good:[],bad:[]};
+      STATE.data[p]=Object.assign({goldenRules:[...DEFAULT_GOLDEN_RULES]}, remote, {images:localImages});
+    }
+    localStorage.setItem('tj_state_v1', JSON.stringify(STATE));
+  }
+}
+function pushRemote(){
+  if(!DBDOC) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>{ DBDOC.set(buildSyncPayload()).catch(()=>{}); }, 500);
+}
+async function trySync(){
+  try{
+    if(typeof claude==='undefined' || !claude.use) return;
+    const userNS=await claude.use("user");
+    if(userNS && userNS.id) UID=await userNS.id();
+  }catch(e){}
+  if(!UID) return;
+  try{ DB=await claude.use("db"); }catch(e){}
+  if(!DB) return;
+  try{
+    DBDOC=DB.doc('data/users/'+UID+'/journal');
+    const snap=await DBDOC.get();
+    if(snap && snap.exists && snap.data()){
+      applySyncPayload(snap.data());
+    } else {
+      await DBDOC.set(buildSyncPayload()).catch(()=>{});
+    }
+    SYNCED=true;
+    DBDOC.onSnapshot(function(doc){
+      if(!doc || !doc.exists) return;
+      if(doc.metadata && doc.metadata.hasPendingWrites) return;
+      applySyncPayload(doc.data());
+      if(AUTHED) renderAll();
+    }, function(){});
+  }catch(e){}
+}
+function cur(){ return STATE.data[STATE.current]; }
+function fmt$(n){ n=Number(n)||0; const s=n<0?'-':'+'; return s+'$'+Math.abs(n).toFixed(2); }
+
+function renderNav(){
+  const nav=document.getElementById('navBtns');
+  nav.innerHTML='';
+  TABS.forEach(([id,label])=>{
+    const b=document.createElement('button');
+    b.className='navbtn'+(TAB===id?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{TAB=id;renderAll();};
+    nav.appendChild(b);
+  });
+  const sel=document.getElementById('pairSelect');
+  sel.innerHTML='';
+  const groups=Object.assign({},PAIR_CATALOG);
+  if(STATE.customPairs.length) groups['My Custom Pairs']=STATE.customPairs;
+  for(const cat in groups){
+    const og=document.createElement('optgroup'); og.label=cat;
+    groups[cat].forEach(p=>{
+      const o=document.createElement('option'); o.value=p; o.textContent=p;
+      if(p===STATE.current) o.selected=true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+  sel.onchange=()=>{ ensurePair(sel.value); STATE.current=sel.value; save(); renderAll(); };
+  document.getElementById('addPairBtn').onclick=()=>{
+    const p=prompt('Pair not in the list? Type it here (e.g. USD/CZK):');
+    if(p && p.trim()){
+      const name=p.trim().toUpperCase();
+      if(!STATE.customPairs.includes(name)) STATE.customPairs.push(name);
+      ensurePair(name); STATE.current=name; save(); renderAll();
+    }
+  };
+}
+
+function checkTodoReset(){
+  const d=cur();
+  const today=new Date().toDateString();
+  if(d.todoDate!==today){
+    // new day: uncheck all, keep custom items
+    for(const k in d.todos){ d.todos[k].items.forEach(it=>it.done=false); }
+    d.todoDate=today; save();
+  }
+}
+
+function renderDashboard(){
+  const auth=loadAuth()||{};
+  const [qtext,qauth]=quoteOfDay();
+  const sessions=sessionStatus();
+  const rules=cur().rules;
+  document.getElementById('main').innerHTML=`
+    <div class="dashtop">
+      <div>
+        <h1>Welcome back${auth.name?', '+auth.name:''} 👋</h1>
+        <div class="sub">${CHANNEL_NAME} — ${new Date().toLocaleDateString('en',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+      </div>
+      <div class="quotecard">
+        <div class="q">"${qtext}"</div>
+        <div class="a">— ${qauth} · Quote of the Day</div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>🕒 Forex Market Sessions</h2>
+        <div class="sessrow">
+          ${sessions.map(s=>`<div class="sesscell ${s.open?'open':'closed'}"><span class="dot"></span>${s.name}<br><span style="color:var(--muted);font-size:11px">${s.open?'Open':'Closed'}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="panel">
+        <h2>🔗 Quick Links</h2>
+        <div class="linkrow">
+          <a href="https://www.forexfactory.com/calendar" target="_blank">📅 Forex Factory — Economic Calendar</a>
+          <a href="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw" target="_blank">🔗 Open This Journal (shareable link)</a>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>📌 ${STATE.current} — Rules Reminder</h2>
+      ${rules.length? rules.map(r=>`<div class="ruleitem"><span>${r}</span></div>`).join('') : '<div class="empty">No rules set yet</div>'}
+    </div>
+  `;
+}
+
+function renderJournal(){
+  const d=cur();
+  const trades=d.trades;
+  const total=trades.length;
+  const wins=trades.filter(t=>Number(t.pnl)>0);
+  const losses=trades.filter(t=>Number(t.pnl)<0);
+  const winRate= total? (wins.length/total*100):0;
+  const totalPnl= trades.reduce((a,t)=>a+Number(t.pnl||0),0);
+  const avgWin= wins.length? wins.reduce((a,t)=>a+Number(t.pnl),0)/wins.length : 0;
+  const avgLoss= losses.length? losses.reduce((a,t)=>a+Number(t.pnl),0)/losses.length : 0;
+  const grossProfit=wins.reduce((a,t)=>a+Number(t.pnl),0);
+  const grossLoss=Math.abs(losses.reduce((a,t)=>a+Number(t.pnl),0));
+  const pf= grossLoss? (grossProfit/grossLoss) : (grossProfit>0?Infinity:0);
+
+  const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
+  const firstDow=new Date(y,m,1).getDay(); const daysInMonth=new Date(y,m+1,0).getDate();
+  const byDay={};
+  trades.forEach(t=>{ const dt=new Date(t.date); if(dt.getFullYear()===y&&dt.getMonth()===m){
+    const key=dt.getDate(); byDay[key]=byDay[key]||{pnl:0,n:0}; byDay[key].pnl+=Number(t.pnl||0); byDay[key].n++; }});
+  let cal='<div class="calgrid">';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(dow=>cal+=`<div class="dow">${dow}</div>`);
+  for(let i=0;i<firstDow;i++) cal+='<div></div>';
+  for(let dd=1; dd<=daysInMonth; dd++){
+    const rec=byDay[dd];
+    if(rec){
+      const cls=rec.pnl>=0?'win':'loss';
+      cal+=`<div class="calcell ${cls}"><div class="d">${dd}</div><div class="p">${fmt$(rec.pnl)}</div><div class="d">${rec.n}T</div></div>`;
+    } else cal+=`<div class="calcell"><div class="d">${dd}</div></div>`;
+  }
+  cal+='</div>';
+
+  const byDate={};
+  trades.forEach(t=>{ byDate[t.date]=byDate[t.date]||{pnl:0,n:0}; byDate[t.date].pnl+=Number(t.pnl||0); byDate[t.date].n++; });
+  const recentDates=Object.keys(byDate).sort((a,b)=>new Date(b)-new Date(a)).slice(0,6);
+  let recentHtml = recentDates.length? recentDates.map(dt=>{
+    const r=byDate[dt];
+    return `<div class="ruleitem"><span>${dt}<br><span style="color:var(--muted);font-size:11px">${r.n} trade${r.n>1?'s':''}</span></span>
+      <b class="${r.pnl>=0?'pos':'neg'}">${fmt$(r.pnl)}</b></div>`;
+  }).join('') : '<div class="empty">No trades yet</div>';
+
+  const rows=[...d.trades].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>`
+    <tr>
+      <td>${t.date}</td>
+      <td>${t.direction}</td>
+      <td>${t.entry||''}</td>
+      <td>${t.exit||''}</td>
+      <td>${t.lot||''}</td>
+      <td class="${Number(t.pnl)>=0?'pos':'neg'}">${fmt$(t.pnl)}</td>
+      <td style="max-width:220px;color:var(--muted)">${t.notes||''}</td>
+      <td><button class="iconbtn" onclick="delTrade('${t.id}')">🗑️</button></td>
+    </tr>`).join('');
+  document.getElementById('main').innerHTML=`
+    <h1>Journal — ${STATE.current}</h1>
+    <div class="sub">Full performance overview and trade log for this pair</div>
+    <div class="cards">
+      <div class="card"><div class="lbl">Total Trades</div><div class="val">${total}</div></div>
+      <div class="card"><div class="lbl">Win Rate</div><div class="val">${winRate.toFixed(1)}%</div></div>
+      <div class="card"><div class="lbl">Total P&L</div><div class="val ${totalPnl>=0?'pos':'neg'}">${fmt$(totalPnl)}</div></div>
+      <div class="card"><div class="lbl">Avg Win</div><div class="val pos">${fmt$(avgWin)}</div></div>
+      <div class="card"><div class="lbl">Avg Loss</div><div class="val neg">${fmt$(avgLoss)}</div></div>
+      <div class="card"><div class="lbl">Profit Factor</div><div class="val">${isFinite(pf)?pf.toFixed(2):'∞'}</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2>P&L Calendar — ${now.toLocaleString('en',{month:'long'})} ${y}</h2>${cal}</div>
+      <div class="panel"><h2>Recent Performance</h2>${recentHtml}</div>
+    </div>
+    <div class="panel">
+      <h2>New Trade Entry</h2>
+      <div class="row">
+        <div class="field"><label>Date</label><input type="date" id="tDate" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label>Direction</label><select id="tDir"><option>Buy</option><option>Sell</option></select></div>
+        <div class="field"><label>Entry</label><input type="number" step="any" id="tEntry"></div>
+        <div class="field"><label>Exit</label><input type="number" step="any" id="tExit"></div>
+        <div class="field"><label>Lot Size</label><input type="number" step="any" id="tLot"></div>
+        <div class="field"><label>P&L ($)</label><input type="number" step="any" id="tPnl"></div>
+        <div class="field" style="flex:1;min-width:200px"><label>Notes (context / entry / exit / mental)</label><input type="text" id="tNotes"></div>
+        <button class="btn" onclick="addTrade()">Add Trade</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Trade History</h2>
+      <div style="overflow-x:auto">
+      <table><thead><tr><th>Date</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Lot</th><th>P&L</th><th>Notes</th><th></th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="8" class="empty">No trades logged yet</td></tr>'}</tbody></table>
+      </div>
+    </div>
+  `;
+}
+function addTrade(){
+  const d=cur();
+  const t={id:'t'+Date.now(), date:document.getElementById('tDate').value||new Date().toISOString().slice(0,10),
+    direction:document.getElementById('tDir').value, entry:document.getElementById('tEntry').value,
+    exit:document.getElementById('tExit').value, lot:document.getElementById('tLot').value,
+    pnl:document.getElementById('tPnl').value||0, notes:document.getElementById('tNotes').value};
+  d.trades.push(t); save(); renderJournal();
+}
+function delTrade(id){ const d=cur(); d.trades=d.trades.filter(t=>t.id!==id); save(); renderJournal(); }
+
+let STAT_FILTER={period:'30', start:'', end:'', instrument:'current'};
+function renderStatistics(){
+  const f=STAT_FILTER;
+  let trades=[];
+  if(f.instrument==='all'){ Object.keys(STATE.data).forEach(p=>trades=trades.concat(STATE.data[p].trades)); }
+  else trades=cur().trades.slice();
+
+  let start=null,end=null;
+  const now=new Date();
+  if(f.period==='custom'){ if(f.start) start=new Date(f.start); if(f.end) end=new Date(f.end); }
+  else if(f.period!=='all'){ start=new Date(now); start.setDate(start.getDate()-Number(f.period)); }
+  trades=trades.filter(t=>{ const dt=new Date(t.date);
+    if(start && dt<start) return false; if(end && dt>end) return false; return true; });
+
+  const total=trades.length;
+  const wins=trades.filter(t=>Number(t.pnl)>0), losses=trades.filter(t=>Number(t.pnl)<0);
+  const winRate= total? (wins.length/total*100):0;
+  const totalPnl= trades.reduce((a,t)=>a+Number(t.pnl||0),0);
+  const avgWin= wins.length? wins.reduce((a,t)=>a+Number(t.pnl),0)/wins.length : 0;
+  const avgLoss= losses.length? losses.reduce((a,t)=>a+Number(t.pnl),0)/losses.length : 0;
+  const grossProfit=wins.reduce((a,t)=>a+Number(t.pnl),0);
+  const grossLoss=Math.abs(losses.reduce((a,t)=>a+Number(t.pnl),0));
+  const pf= grossLoss? (grossProfit/grossLoss) : (grossProfit>0?Infinity:0);
+  const days=new Set(trades.map(t=>t.date)).size;
+  const best= trades.length? Math.max(...trades.map(t=>Number(t.pnl||0))):0;
+  const worst= trades.length? Math.min(...trades.map(t=>Number(t.pnl||0))):0;
+
+  document.getElementById('main').innerHTML=`
+    <h1>Statistics</h1>
+    <div class="sub">Performance breakdown with custom filters</div>
+    <div class="panel">
+      <h2>Analysis Filters</h2>
+      <div class="row">
+        <div class="field"><label>Period</label>
+          <select id="fPeriod">
+            <option value="7">Last 7 days</option><option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option><option value="all">All time</option>
+            <option value="custom">Custom range</option>
+          </select>
+        </div>
+        <div class="field"><label>Start date</label><input type="date" id="fStart"></div>
+        <div class="field"><label>End date</label><input type="date" id="fEnd"></div>
+        <div class="field"><label>Instrument</label>
+          <select id="fInstrument">
+            <option value="current">${STATE.current} (current)</option>
+            <option value="all">All instruments</option>
+          </select>
+        </div>
+        <button class="btn ghost" onclick="STAT_FILTER={period:'30',start:'',end:'',instrument:'current'};renderStatistics();">Reset Filters</button>
+      </div>
+      <div style="color:var(--muted);font-size:12px">Analyzing ${total} trades over ${days} trading days</div>
+    </div>
+    <div class="panel">
+      <h2>Performance Statistics</h2>
+      ${total===0? '<div class="empty">No data available for the selected period<br><span style="font-size:11px">Try changing the period or add trades to see your statistics</span></div>' : `
+      <div class="cards">
+        <div class="card"><div class="lbl">Total Trades</div><div class="val">${total}</div></div>
+        <div class="card"><div class="lbl">Win Rate</div><div class="val">${winRate.toFixed(1)}%</div></div>
+        <div class="card"><div class="lbl">Total P&L</div><div class="val ${totalPnl>=0?'pos':'neg'}">${fmt$(totalPnl)}</div></div>
+        <div class="card"><div class="lbl">Avg Win</div><div class="val pos">${fmt$(avgWin)}</div></div>
+        <div class="card"><div class="lbl">Avg Loss</div><div class="val neg">${fmt$(avgLoss)}</div></div>
+        <div class="card"><div class="lbl">Profit Factor</div><div class="val">${isFinite(pf)?pf.toFixed(2):'∞'}</div></div>
+        <div class="card"><div class="lbl">Best Trade</div><div class="val pos">${fmt$(best)}</div></div>
+        <div class="card"><div class="lbl">Worst Trade</div><div class="val neg">${fmt$(worst)}</div></div>
+      </div>`}
+    </div>
+  `;
+  document.getElementById('fPeriod').value=f.period;
+  document.getElementById('fStart').value=f.start;
+  document.getElementById('fEnd').value=f.end;
+  document.getElementById('fInstrument').value=f.instrument;
+  document.getElementById('fPeriod').onchange=e=>{f.period=e.target.value;renderStatistics();};
+  document.getElementById('fStart').onchange=e=>{f.start=e.target.value;f.period='custom';renderStatistics();};
+  document.getElementById('fEnd').onchange=e=>{f.end=e.target.value;f.period='custom';renderStatistics();};
+  document.getElementById('fInstrument').onchange=e=>{f.instrument=e.target.value;renderStatistics();};
+}
+
+function goldenBoxHtml(d){
+  return `<div class="golden"><h2>⚠️ Golden Rules — MUST RESPECT ABSOLUTELY</h2>
+    ${d.goldenRules.map((r,i)=>`<div class="ruleitem" style="border-color:rgba(239,68,68,.22)"><span>${r}</span><button class="iconbtn" onclick="delGoldenRule(${i})">🗑️</button></div>`).join('') || '<div class="empty">No golden rules yet</div>'}
+    <div class="row" style="margin-top:12px;align-items:end">
+      <div class="field" style="flex:1;min-width:200px"><label>New golden rule</label><input type="text" id="newGolden"></div>
+      <button class="btn ghost" onclick="addGoldenRule()">+ Add</button>
+    </div>
+  </div>`;
+}
+function addGoldenRule(){
+  const inp=document.getElementById('newGolden'); if(!inp || !inp.value.trim()) return;
+  cur().goldenRules.push(inp.value.trim()); save(); renderAll();
+}
+function delGoldenRule(i){ cur().goldenRules.splice(i,1); save(); renderAll(); }
+
+function renderTodo(){
+  checkTodoReset();
+  const d=cur();
+  let html=`<h1>To-Do — ${STATE.current}</h1><div class="sub">Daily checklist · resets automatically each new day</div>`;
+  html+=goldenBoxHtml(d);
+  for(const k in d.todos){
+    const sec=d.todos[k];
+    const done=sec.items.filter(i=>i.done).length;
+    const pct= sec.items.length? Math.round(done/sec.items.length*100):0;
+    html+=`<div class="checklist-section">
+      <div class="cl-head"><b>${sec.title}</b><span>${pct}% complete</span></div>
+      ${sec.items.map(it=>`
+        <div class="cl-item">
+          <input type="checkbox" ${it.done?'checked':''} onchange="toggleTodo('${k}','${it.id}')">
+          <span class="txt ${it.done?'done':''}">${it.text}</span>
+          <span class="tag ${it.sev}">${it.sev==='crit'?'CRITIQUE':'IMPORTANT'}</span>
+          <button class="iconbtn" onclick="delTodo('${k}','${it.id}')">🗑️</button>
+        </div>`).join('')}
+      <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;">
+        <input type="text" id="new_${k}" placeholder="Add item..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 9px;font-size:13px;">
+        <select id="sev_${k}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px;">
+          <option value="crit">Critique</option><option value="imp">Important</option>
+        </select>
+        <button class="btn ghost" onclick="addTodo('${k}')">+ Add</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('main').innerHTML=html;
+}
+function toggleTodo(sec,id){ const it=cur().todos[sec].items.find(i=>i.id===id); it.done=!it.done; save(); renderTodo(); }
+function delTodo(sec,id){ const s=cur().todos[sec]; s.items=s.items.filter(i=>i.id!==id); save(); renderTodo(); }
+function addTodo(sec){
+  const inp=document.getElementById('new_'+sec), sevSel=document.getElementById('sev_'+sec);
+  if(!inp.value.trim()) return;
+  cur().todos[sec].items.push({id:sec+'_'+Date.now(),text:inp.value.trim(),sev:sevSel.value,done:false});
+  save(); renderTodo();
+}
+
+function renderRules(){
+  const d=cur();
+  document.getElementById('main').innerHTML=`
+    <h1>Rules — ${STATE.current}</h1>
+    <div class="sub">Your personal trading rules for this pair — add as many as you need</div>
+    ${goldenBoxHtml(d)}
+    <div class="rulebox">
+      <h2 style="color:var(--accent2);font-size:15px;margin-top:0">My Trading Rules</h2>
+      ${d.rules.map((r,i)=>`<div class="ruleitem"><span>${r}</span><button class="iconbtn" onclick="delRule(${i})">🗑️</button></div>`).join('') || '<div class="empty">No rules yet</div>'}
+      <div class="row" style="margin-top:14px">
+        <div class="field" style="flex:1;min-width:240px"><label>New rule</label><input type="text" id="newRule"></div>
+        <button class="btn" onclick="addRule()">+ Add Rule</button>
+      </div>
+    </div>
+  `;
+}
+function addRule(){ const inp=document.getElementById('newRule'); if(!inp.value.trim())return;
+  cur().rules.push(inp.value.trim()); save(); renderRules(); }
+function delRule(i){ cur().rules.splice(i,1); save(); renderRules(); }
+
+function renderReview(){
+  const d=cur();
+  function gallery(kind,label){
+    return `<div class="panel">
+      <h2>${label}</h2>
+      <label class="uploadbox" for="up_${kind}">📤 Click to upload screenshots (multiple allowed)</label>
+      <input type="file" id="up_${kind}" accept="image/*" multiple style="display:none" onchange="uploadImg('${kind}',this.files)">
+      <div class="gallery">
+        ${d.images[kind].map((src,i)=>`<div class="thumb"><img src="${src}"><button class="rm" onclick="rmImg('${kind}',${i})">✕</button></div>`).join('')
+          || '<div class="empty" style="grid-column:1/-1">No images yet</div>'}
+      </div>
+    </div>`;
+  }
+  document.getElementById('main').innerHTML=`
+    <h1>Trade Review — ${STATE.current}</h1>
+    <div class="sub">Screenshots of your best and worst trades, for review</div>
+    ${gallery('good','✅ Good Trades')}
+    ${gallery('bad','❌ Bad Trades')}
+  `;
+}
+function uploadImg(kind,files){
+  const d=cur();
+  [...files].forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=e=>{ d.images[kind].push(e.target.result); save(); if(TAB==='review') renderReview(); };
+    reader.readAsDataURL(f);
+  });
+}
+function rmImg(kind,i){ cur().images[kind].splice(i,1); save(); renderReview(); }
+
+function renderRisk(){
+  const d=cur(); const r=d.risk;
+  const equity=Number(r.equity)||0, pct=Number(r.riskPct)||0, exp=Number(r.expected)||0, pips=Number(r.pips)||0;
+  const riskPerDay=equity*pct;
+  const riskPerTrade= exp? riskPerDay/exp : 0;
+  const lotSize= pips? riskPerTrade/pips : 0;
+  document.getElementById('main').innerHTML=`
+    <h1>Risk & Lot Size Calculator — ${STATE.current}</h1>
+    <div class="sub">Based on your multi-asset risk calculator template</div>
+    <div class="panel">
+      <div class="riskgrid">
+        <div class="field"><label>Equity ($)</label><input type="number" step="any" id="rEquity" value="${r.equity}"></div>
+        <div class="field"><label>Risk % (decimal, e.g. 0.01 = 1%)</label><input type="number" step="any" id="rPct" value="${r.riskPct}"></div>
+        <div class="field"><label>Expected Trades (per day)</label><input type="number" step="any" id="rExp" value="${r.expected}"></div>
+        <div class="field"><label>Risk Pips / Points</label><input type="number" step="any" id="rPips" value="${r.pips}"></div>
+      </div>
+      <button class="btn" onclick="saveRisk()">Calculate & Save</button>
+      <div class="cards" style="margin-top:18px">
+        <div class="card"><div class="lbl">Risk per Day</div><div class="val">$${riskPerDay.toFixed(2)}</div></div>
+        <div class="card"><div class="lbl">Risk Amount / Trade</div><div class="val">$${riskPerTrade.toFixed(2)}</div></div>
+        <div class="card"><div class="lbl">Lot Size (Volume)</div><div class="val pos">${lotSize.toFixed(2)}</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>How to use</h2>
+      <div class="note">
+        • Fill in Equity, Risk %, Expected Trades, and Risk Pips.<br>
+        • Risk Pips = |Entry price − Stop-loss price|, converted per the asset's pip/point size.<br>
+        • EUR/USD & GBP/USD: 1 pip = 0.0001 → multiply the price difference by 10,000.<br>
+        • USD/JPY & GBP/JPY: 1 pip = 0.01 → multiply the price difference by 100.<br>
+        • XAUUSD (Gold): quoted in whole $ points → just use the raw $ difference (e.g. $700), no multiplying needed.<br>
+        • Lot Size updates automatically once Risk Pips is entered — that's your final position size.
+      </div>
+    </div>
+  `;
+}
+function saveRisk(){
+  const d=cur();
+  d.risk={equity:document.getElementById('rEquity').value,riskPct:document.getElementById('rPct').value,
+    expected:document.getElementById('rExp').value,pips:document.getElementById('rPips').value};
+  save(); renderRisk();
+}
+
+function renderLinks(){
+  document.getElementById('main').innerHTML=`
+    <h1>Share & Install</h1>
+    <div class="sub">Open the shared web link in a browser, then install DDK's Trading Journal as an app on your phone or computer.</div>
+    <div class="panel">
+      <h2>📲 Install the App</h2>
+      <div class="note">When this journal is hosted on a secure web address (HTTPS), supported browsers can install it as a standalone app. Your friends do not need to download the source files first.</div>
+      <button id="pwaInstallBtn" class="btn" style="display:none;margin-top:12px" onclick="installDDKApp()">⬇️ Install DDK's Trading Journal</button>
+      <div class="note" style="margin-top:10px">On phones, use the browser menu and choose <b>Add to Home Screen</b> or <b>Install App</b> if the browser does not show the button automatically.</div>
+    </div>
+    <div class="panel">
+      <h2>💻 Your Private App</h2>
+      <div class="note">Use the launcher included with this app folder to open the journal in a clean app-style browser window. Your journal data is stored locally on this PC.</div>
+      <div class="note" style="margin-top:10px">For privacy, keep the whole app folder somewhere only you and your trusted friends can access.</div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>🚀 How to Open</h2>
+        <div class="note">Double-click <b>Open DDK Trading Journal.bat</b> in the downloaded folder. If your browser supports app mode, it will open without the normal browser tabs and address bar.</div>
+      </div>
+      <div class="panel">
+        <h2>📌 Put It on Your Desktop</h2>
+        <div class="note">Right-click the launcher → Show more options → Send to → Desktop (create shortcut). Then you can open the journal from your desktop like a normal app.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>🔒 Offline & Private</h2>
+      <div class="note">The core journal works offline. Your trades, checklists, rules, risk settings and other saved information use this browser's local storage. Nothing is sent to a public website by this standalone version.</div>
+    </div>
+  `;
+}
+function copyLink(){
+  const m=document.getElementById('copyMsg');
+  if(m){ m.textContent='This is the private offline version on your PC.'; setTimeout(()=>{ if(m) m.textContent=''; },2200); }
+}
+function downloadAppCopy(){
+  const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  const blob=new Blob([html], {type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='DDKs-Trading-Journal.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function renderAll(){
+  renderNav();
+  if(TAB==='dashboard') renderDashboard();
+  else if(TAB==='journal') renderJournal();
+  else if(TAB==='statistics') renderStatistics();
+  else if(TAB==='todo') renderTodo();
+  else if(TAB==='rules') renderRules();
+  else if(TAB==='review') renderReview();
+  else if(TAB==='risk') renderRisk();
+  else if(TAB==='links') renderLinks();
+}
+boot();
+trySync().then(()=>{ if(AUTHED) boot(); else renderAuthScreen(); });
+</script>
+
+
+<script>
+(function(){
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    const btn=document.getElementById('pwaInstallBtn');
+    if(btn){ btn.style.display='inline-block'; }
+  });
+  window.installDDKApp = async function(){
+    if(!deferredPrompt){
+      alert('If the Install button is not available, use your browser menu and choose “Install DDK's Trading Journal” or “Add to Home Screen”.');
+      return;
+    }
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    const btn=document.getElementById('pwaInstallBtn'); if(btn) btn.style.display='none';
+  };
+  window.addEventListener('appinstalled', ()=>{ const btn=document.getElementById('pwaInstallBtn'); if(btn) btn.style.display='none'; });
+})();
+</script>
+</body></html>
