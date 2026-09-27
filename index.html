@@ -275,71 +275,172 @@ let PENDING_AVATAR='';
 
 function renderAuthScreen(){
   const root=document.getElementById('root');
+  const saved=loadAuth();
+
   root.innerHTML=`<div class="authwrap"><div class="authcard">
     <div class="authavatar" id="avaClick">${PENDING_AVATAR?`<img src="${PENDING_AVATAR}">`:'👤'}</div>
     <input type="file" id="avaInput" accept="image/*" style="display:none">
+
     <h1>${CHANNEL_NAME}</h1>
-    <div class="sub">Create your account</div>
-    <div class="authfield"><label>Name</label><input type="text" id="setName" placeholder="e.g. DDK"></div>
-    <div class="authfield"><label>Password</label><input type="password" id="setPass"></div>
-    <div class="authfield"><label>Confirm password</label><input type="password" id="setPass2"></div>
-    <div class="autherr" id="authErr"></div>
-    <button class="btn" style="width:100%" onclick="doCreateAccount()">Create Account</button>
+    <div class="sub">${saved ? 'Welcome back' : 'Create your account'}</div>
+
+    ${saved ? `
+      <div class="authfield">
+        <label>Name</label>
+        <input type="text" id="loginName" placeholder="Enter your name">
+      </div>
+
+      <div class="authfield">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter your password">
+      </div>
+
+      <div class="autherr" id="authErr"></div>
+
+      <button class="btn" style="width:100%" onclick="doLogin()">Login</button>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="showCreateAccount()">Create New Account</button>
+    ` : `
+      <div class="authfield">
+        <label>Name</label>
+        <input type="text" id="setName" placeholder="e.g. DDK">
+      </div>
+
+      <div class="authfield">
+        <label>Password</label>
+        <input type="password" id="setPass">
+      </div>
+
+      <div class="authfield">
+        <label>Confirm password</label>
+        <input type="password" id="setPass2">
+      </div>
+
+      <div class="autherr" id="authErr"></div>
+
+      <button class="btn" style="width:100%" onclick="doCreateAccount()">Create Account</button>
+    `}
   </div></div>`;
-  const passInput=document.getElementById('setPass2');
-  passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doCreateAccount();});
+
   const avaClick=document.getElementById('avaClick');
-  avaClick.onclick=()=>document.getElementById('avaInput').click();
-  document.getElementById('avaInput').onchange=function(){
-    const f=this.files[0]; if(!f)return;
-    const r=new FileReader(); r.onload=e=>{PENDING_AVATAR=e.target.result; renderAuthScreen();}; r.readAsDataURL(f);
+
+  avaClick.onclick=()=>{
+    document.getElementById('avaInput').click();
   };
+
+  document.getElementById('avaInput').onchange=function(){
+    const f=this.files[0];
+    if(!f)return;
+
+    const r=new FileReader();
+
+    r.onload=e=>{
+      PENDING_AVATAR=e.target.result;
+      renderAuthScreen();
+    };
+
+    r.readAsDataURL(f);
+  };
+
+  const loginPass=document.getElementById('loginPass');
+
+  if(loginPass){
+    loginPass.addEventListener('keydown',e=>{
+      if(e.key==='Enter')doLogin();
+    });
+  }
+
+  const passInput=document.getElementById('setPass2');
+
+  if(passInput){
+    passInput.addEventListener('keydown',e=>{
+      if(e.key==='Enter')doCreateAccount();
+    });
+  }
 }
+
+
+function doLogin(){
+  const saved=loadAuth();
+
+  const name=document.getElementById('loginName').value.trim();
+  const pass=document.getElementById('loginPass').value;
+
+  if(!saved){
+    document.getElementById('authErr').textContent='No account found. Please create an account.';
+    return;
+  }
+
+  if(name!==saved.name || pass!==saved.password){
+    document.getElementById('authErr').textContent='Incorrect name or password.';
+    return;
+  }
+
+  AUTHED=true;
+  boot();
+}
+
+
 function doCreateAccount(){
   const name=document.getElementById('setName').value.trim();
-  const p1=document.getElementById('setPass').value, p2=document.getElementById('setPass2').value;
-  if(!name){document.getElementById('authErr').textContent='Please enter your name.';return;}
-  if(!p1){document.getElementById('authErr').textContent='Please set a password.';return;}
-  if(p1!==p2){document.getElementById('authErr').textContent='Passwords do not match.';return;}
-  saveAuth({name, password:p1, avatar:PENDING_AVATAR});
-  AUTHED=true; boot();
+  const p1=document.getElementById('setPass').value;
+  const p2=document.getElementById('setPass2').value;
+
+  if(!name){
+    document.getElementById('authErr').textContent='Please enter your name.';
+    return;
+  }
+
+  if(!p1){
+    document.getElementById('authErr').textContent='Please set a password.';
+    return;
+  }
+
+  if(p1!==p2){
+    document.getElementById('authErr').textContent='Passwords do not match.';
+    return;
+  }
+
+  saveAuth({
+    name:name,
+    password:p1,
+    avatar:PENDING_AVATAR
+  });
+
+  AUTHED=true;
+  boot();
 }
-function logout(){ localStorage.removeItem('tj_auth'); AUTHED=false; renderAuthScreen(); }
+
+
+function showCreateAccount(){
+  localStorage.removeItem('tj_auth');
+  PENDING_AVATAR=null;
+  renderAuthScreen();
+}
+
+
+function logout(){
+  localStorage.removeItem('tj_auth');
+  AUTHED=false;
+  renderAuthScreen();
+}
+
+
 function updateAvatar(files){
-  const f=files[0]; if(!f)return;
+  const f=files[0];
+
+  if(!f)return;
+
   const r=new FileReader();
-  r.onload=e=>{ const a=loadAuth()||{}; a.avatar=e.target.result; saveAuth(a); boot(); };
+
+  r.onload=e=>{
+    const a=loadAuth()||{};
+    a.avatar=e.target.result;
+    saveAuth(a);
+    boot();
+  };
+
   r.readAsDataURL(f);
 }
-
-function renderShell(){
-  const auth=loadAuth()||{};
-  document.getElementById('root').innerHTML=`
-    <div id="app">
-      <aside class="sidebar">
-        <div class="brand">📊 ${CHANNEL_NAME}</div>
-        <div class="avatarrow">
-          <label class="avatar" for="sideAvaInput">${auth.avatar?`<img src="${auth.avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</label>
-          <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
-          <div class="avatarname">${auth.name||'Trader'}</div>
-          <button class="logoutbtn" onclick="logout()">Log out</button>
-        </div>
-        <div class="pairbox">
-          <label>Currency Pair</label>
-          <select id="pairSelect"></select>
-          <button class="addpair" id="addPairBtn">+ Add Pair</button>
-        </div>
-        <nav id="navBtns"></nav>
-      </aside>
-      <main id="main"></main>
-    </div>`;
-}
-function boot(){
-  if(!AUTHED){ renderAuthScreen(); return; }
-  renderShell();
-  renderAll();
-}
-
 const TABS=[
   ['dashboard','📊 Dashboard'],['journal','📓 Journal'],['statistics','📈 Statistics'],
   ['todo','✅ To-Do'],['rules','⚠️ Rules'],['review','🖼️ Trade Review'],['risk','🧮 Risk Calculator'],
