@@ -939,8 +939,27 @@ function renderLinks(){
   `;
 }
 function copyLink(){
-  const m=document.getElementById('copyMsg');
-  if(m){ m.textContent='This is the private offline version on your PC.'; setTimeout(()=>{ if(m) m.textContent=''; },2200); }
+function copyLink(){
+  const link = window.location.href;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "DDK's Trading Journal",
+      text: "Check out DDK's Trading Journal",
+      url: link
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(link).then(() => {
+      const m = document.getElementById('copyMsg');
+      if(m){
+        m.textContent = 'Journal link copied!';
+        setTimeout(() => {
+          m.textContent = '';
+        }, 2200);
+      }
+    });
+  }
+}
 }
 function downloadAppCopy(){
   const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
@@ -983,7 +1002,7 @@ trySync().then(()=>{ if(AUTHED) boot(); else renderAuthScreen(); });
   });
   window.installDDKApp = async function(){
     if(!deferredPrompt){
-      alert('If the Install button is not available, use your browser menu and choose “Install DDK's Trading Journal” or “Add to Home Screen”.');
+     alert('If the Install button is not available, use your browser menu and choose "Install DDK\'s Trading Journal" or "Add to Home Screen".');
       return;
     }
     deferredPrompt.prompt();
