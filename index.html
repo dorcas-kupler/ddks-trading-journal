@@ -1002,7 +1002,7 @@ trySync().then(()=>{ if(AUTHED) boot(); else renderAuthScreen(); });
   });
   window.installDDKApp = async function(){
     if(!deferredPrompt){
-     alert('If the Install button is not available, use your browser menu and choose "Install DDK\'s Trading Journal" or "Add to Home Screen".');
+     alert("If the Install button is not available, use your browser menu and choose 'Install DDK Trading Journal' or 'Add to Home Screen'.");
       return;
     }
     deferredPrompt.prompt();
