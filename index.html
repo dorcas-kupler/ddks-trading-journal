@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" style="color-scheme: dark;"><head>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7,9 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="DDK's Trading Journal">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0e14">
-<meta name="application-name" content="DDK's Trading Journal">
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="description" content="Private offline trading journal">
 <title>DDK's Trading Journal</title>
 <style>
 :root{
@@ -171,68 +169,10 @@ body::before{content:"Patience + Discipline + Consistency = Success";position:fi
 </style>
 </head>
 <body>
-<div id="root">
-    <div id="app">
-      <aside class="sidebar">
-        <div class="brand">📊 DDK's Trading Journal</div>
-        <div class="avatarrow">
-          <label class="avatar" for="sideAvaInput">👤</label>
-          <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
-          <div class="avatarname">DDK</div>
-          <button class="logoutbtn" onclick="logout()">Log out</button>
-        </div>
-        <div class="pairbox">
-          <label>Currency Pair</label>
-          <select id="pairSelect"><optgroup label="Majors"><option value="EUR/USD">EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="USD/JPY">USD/JPY</option><option value="USD/CHF">USD/CHF</option><option value="USD/CAD">USD/CAD</option><option value="AUD/USD">AUD/USD</option><option value="NZD/USD">NZD/USD</option></optgroup><optgroup label="Minors"><option value="EUR/GBP">EUR/GBP</option><option value="EUR/JPY">EUR/JPY</option><option value="EUR/CHF">EUR/CHF</option><option value="EUR/AUD">EUR/AUD</option><option value="EUR/CAD">EUR/CAD</option><option value="EUR/NZD">EUR/NZD</option><option value="GBP/JPY">GBP/JPY</option><option value="GBP/CHF">GBP/CHF</option><option value="GBP/AUD">GBP/AUD</option><option value="GBP/CAD">GBP/CAD</option><option value="GBP/NZD">GBP/NZD</option><option value="AUD/JPY">AUD/JPY</option><option value="AUD/CAD">AUD/CAD</option><option value="AUD/CHF">AUD/CHF</option><option value="AUD/NZD">AUD/NZD</option><option value="CAD/JPY">CAD/JPY</option><option value="CHF/JPY">CHF/JPY</option><option value="NZD/JPY">NZD/JPY</option><option value="NZD/CAD">NZD/CAD</option><option value="NZD/CHF">NZD/CHF</option></optgroup><optgroup label="Exotics"><option value="USD/TRY">USD/TRY</option><option value="USD/ZAR">USD/ZAR</option><option value="USD/MXN">USD/MXN</option><option value="USD/SEK">USD/SEK</option><option value="USD/NOK">USD/NOK</option><option value="USD/SGD">USD/SGD</option><option value="USD/HKD">USD/HKD</option><option value="USD/PLN">USD/PLN</option><option value="USD/THB">USD/THB</option><option value="USD/DKK">USD/DKK</option><option value="EUR/TRY">EUR/TRY</option><option value="EUR/ZAR">EUR/ZAR</option><option value="GBP/ZAR">GBP/ZAR</option></optgroup><optgroup label="Metals"><option value="XAUUSD">XAUUSD</option><option value="XAGUSD">XAGUSD</option><option value="XPTUSD">XPTUSD</option><option value="XPDUSD">XPDUSD</option></optgroup><optgroup label="Crypto"><option value="BTC/USD">BTC/USD</option><option value="ETH/USD">ETH/USD</option><option value="XRP/USD">XRP/USD</option><option value="LTC/USD">LTC/USD</option><option value="BNB/USD">BNB/USD</option><option value="SOL/USD">SOL/USD</option><option value="DOGE/USD">DOGE/USD</option><option value="ADA/USD">ADA/USD</option><option value="AVAX/USD">AVAX/USD</option><option value="DOT/USD">DOT/USD</option><option value="MATIC/USD">MATIC/USD</option><option value="LINK/USD">LINK/USD</option></optgroup></select>
-          <button class="addpair" id="addPairBtn">+ Add Pair</button>
-        </div>
-        <nav id="navBtns"><button class="navbtn">📊 Dashboard</button><button class="navbtn">📓 Journal</button><button class="navbtn">📈 Statistics</button><button class="navbtn">✅ To-Do</button><button class="navbtn">⚠️ Rules</button><button class="navbtn">🖼️ Trade Review</button><button class="navbtn">🧮 Risk Calculator</button><button class="navbtn active">🔗 Share &amp; Install</button></nav>
-      </aside>
-      <main id="main">
-    <h1>Share &amp; Install</h1>
-    <div class="sub">Get this journal onto any device — share the link, or save your own offline copy</div>
-    <div class="panel">
-      <h2>🔗 Your Journal Link</h2>
-      <div class="row" style="align-items:center">
-        <input type="text" id="linkBox" value="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw" readonly="" style="flex:1;min-width:220px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;font-size:13px;">
-        <button class="btn" onclick="copyLink()">Copy Link</button>
-      </div>
-      <div id="copyMsg" style="font-size:12px;color:var(--green);margin-top:6px;height:14px;"></div>
-    </div>
-    <div class="grid2">
-      <div class="panel">
-        <h2>📱 Scan to Open</h2>
-        <div id="qrcode" style="display:flex;justify-content:center;align-items:center;min-height:180px;padding:10px;background:#fff;border-radius:10px;width:fit-content;" title="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw"><canvas width="160" height="160" style="display: none;"></canvas><img src="data:image/png;base64,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" style="display: block;"></div>
-        <div class="note" style="margin-top:10px">Scan with a phone camera to open the journal instantly.</div>
-      </div>
-      <div class="panel">
-        <h2>⬇️ Download Offline Copy</h2>
-        <div class="note">Save a standalone file to this device. Once downloaded, it opens straight from your files or desktop — no link, no internet needed to log your trades.</div>
-        <button class="btn" style="margin-top:12px" onclick="downloadAppCopy()">Download Journal (.html)</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>📲 Add to Home Screen / Desktop</h2>
-      <div class="grid2">
-        <div>
-          <b style="font-size:13px">On Android</b>
-          <div class="note" style="margin-top:6px">Open the link in Chrome → tap the ⋮ menu → "Add to Home screen" or "Install app".</div>
-        </div>
-        <div>
-          <b style="font-size:13px">On iPhone</b>
-          <div class="note" style="margin-top:6px">Open the link in Safari → tap the Share icon → "Add to Home Screen".</div>
-        </div>
-      </div>
-      <div style="margin-top:14px">
-        <b style="font-size:13px">On PC / Mac</b>
-        <div class="note" style="margin-top:6px">Download the .html file above and pin it to your desktop or taskbar — double-click any time to open it, fully offline.</div>
-      </div>
-    </div>
-  </main>
-    </div></div>
-
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-const APP_LINK="DDKs Trading Journal (this PC)";
+const APP_LINK="https://dorcas-kupler.github.io/ddks-trading-journal/";
 const CHANNEL_NAME="DDK's Trading Journal";
 const QUOTES=[
   ["The market is a device for transferring money from the impatient to the patient.","Warren Buffett"],
@@ -270,177 +210,101 @@ function sessionStatus(){
 function loadAuth(){ try{return JSON.parse(localStorage.getItem('tj_auth'));}catch(e){return null;} }
 function saveAuthLocal(a){ localStorage.setItem('tj_auth', JSON.stringify(a)); }
 function saveAuth(a){ saveAuthLocal(a); pushRemote(); }
-let AUTHED= !!loadAuth();
+let AUTHED= localStorage.getItem('tj_session')==='1' && !!loadAuth();
 let PENDING_AVATAR='';
+let AUTH_VIEW= loadAuth() ? 'login' : 'create';
 
 function renderAuthScreen(){
   const root=document.getElementById('root');
-  const saved=loadAuth();
-
-  root.innerHTML=`<div class="authwrap"><div class="authcard">
-    <div class="authavatar" id="avaClick">${PENDING_AVATAR?`<img src="${PENDING_AVATAR}">`:'👤'}</div>
-    <input type="file" id="avaInput" accept="image/*" style="display:none">
-
-    <h1>${CHANNEL_NAME}</h1>
-    <div class="sub">${saved ? 'Welcome back' : 'Create your account'}</div>
-
-    ${saved ? `
-      <div class="authfield">
-        <label>Name</label>
-        <input type="text" id="loginName" placeholder="Enter your name">
-      </div>
-
-      <div class="authfield">
-        <label>Password</label>
-        <input type="password" id="loginPass" placeholder="Enter your password">
-      </div>
-
+  const auth=loadAuth();
+  if(AUTH_VIEW==='login' && auth){
+    root.innerHTML=`<div class="authwrap"><div class="authcard">
+      <div class="authavatar">${auth.avatar?`<img src="${auth.avatar}">`:'👤'}</div>
+      <h1>${CHANNEL_NAME}</h1>
+      <div class="sub">Welcome back${auth.name?', '+auth.name:''}</div>
+      <div class="authfield"><label>Password</label><input type="password" id="loginPass"></div>
       <div class="autherr" id="authErr"></div>
-
-      <button class="btn" style="width:100%" onclick="doLogin()">Login</button>
-      <button class="btn" style="width:100%;margin-top:10px" onclick="showCreateAccount()">Create New Account</button>
-    ` : `
-      <div class="authfield">
-        <label>Name</label>
-        <input type="text" id="setName" placeholder="e.g. DDK">
-      </div>
-
-      <div class="authfield">
-        <label>Password</label>
-        <input type="password" id="setPass">
-      </div>
-
-      <div class="authfield">
-        <label>Confirm password</label>
-        <input type="password" id="setPass2">
-      </div>
-
+      <button class="btn" style="width:100%" onclick="doLogin()">Log In</button>
+      <button class="logoutbtn" style="width:100%;margin-top:10px" onclick="AUTH_VIEW='create';renderAuthScreen();">Not you? Create a new account</button>
+    </div></div>`;
+    const passInput=document.getElementById('loginPass');
+    passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  } else {
+    root.innerHTML=`<div class="authwrap"><div class="authcard">
+      <div class="authavatar" id="avaClick">${PENDING_AVATAR?`<img src="${PENDING_AVATAR}">`:'👤'}</div>
+      <input type="file" id="avaInput" accept="image/*" style="display:none">
+      <h1>${CHANNEL_NAME}</h1>
+      <div class="sub">Create your account</div>
+      <div class="authfield"><label>Name</label><input type="text" id="setName" placeholder="e.g. DDK"></div>
+      <div class="authfield"><label>Password</label><input type="password" id="setPass"></div>
+      <div class="authfield"><label>Confirm password</label><input type="password" id="setPass2"></div>
       <div class="autherr" id="authErr"></div>
-
       <button class="btn" style="width:100%" onclick="doCreateAccount()">Create Account</button>
-    `}
-  </div></div>`;
-
-  const avaClick=document.getElementById('avaClick');
-
-  avaClick.onclick=()=>{
-    document.getElementById('avaInput').click();
-  };
-
-  document.getElementById('avaInput').onchange=function(){
-    const f=this.files[0];
-    if(!f)return;
-
-    const r=new FileReader();
-
-    r.onload=e=>{
-      PENDING_AVATAR=e.target.result;
-      renderAuthScreen();
+      ${auth?`<button class="logoutbtn" style="width:100%;margin-top:10px" onclick="AUTH_VIEW='login';renderAuthScreen();">← Back to log in</button>`:''}
+    </div></div>`;
+    const passInput=document.getElementById('setPass2');
+    passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doCreateAccount();});
+    const avaClick=document.getElementById('avaClick');
+    avaClick.onclick=()=>document.getElementById('avaInput').click();
+    document.getElementById('avaInput').onchange=function(){
+      const f=this.files[0]; if(!f)return;
+      const r=new FileReader(); r.onload=e=>{PENDING_AVATAR=e.target.result; renderAuthScreen();}; r.readAsDataURL(f);
     };
-
-    r.readAsDataURL(f);
-  };
-
-  const loginPass=document.getElementById('loginPass');
-
-  if(loginPass){
-    loginPass.addEventListener('keydown',e=>{
-      if(e.key==='Enter')doLogin();
-    });
-  }
-
-  const passInput=document.getElementById('setPass2');
-
-  if(passInput){
-    passInput.addEventListener('keydown',e=>{
-      if(e.key==='Enter')doCreateAccount();
-    });
   }
 }
-
-
-function doLogin(){
-  const saved=loadAuth();
-
-  const name=document.getElementById('loginName').value.trim();
-  const pass=document.getElementById('loginPass').value;
-
-  if(!saved){
-    document.getElementById('authErr').textContent='No account found. Please create an account.';
-    return;
-  }
-
-  if(name!==saved.name || pass!==saved.password){
-    document.getElementById('authErr').textContent='Incorrect name or password.';
-    return;
-  }
-
-  AUTHED=true;
-  boot();
-}
-
-
 function doCreateAccount(){
   const name=document.getElementById('setName').value.trim();
-  const p1=document.getElementById('setPass').value;
-  const p2=document.getElementById('setPass2').value;
-
-  if(!name){
-    document.getElementById('authErr').textContent='Please enter your name.';
-    return;
-  }
-
-  if(!p1){
-    document.getElementById('authErr').textContent='Please set a password.';
-    return;
-  }
-
-  if(p1!==p2){
-    document.getElementById('authErr').textContent='Passwords do not match.';
-    return;
-  }
-
-  saveAuth({
-    name:name,
-    password:p1,
-    avatar:PENDING_AVATAR
-  });
-
-  AUTHED=true;
-  boot();
+  const p1=document.getElementById('setPass').value, p2=document.getElementById('setPass2').value;
+  if(!name){document.getElementById('authErr').textContent='Please enter your name.';return;}
+  if(!p1){document.getElementById('authErr').textContent='Please set a password.';return;}
+  if(p1!==p2){document.getElementById('authErr').textContent='Passwords do not match.';return;}
+  saveAuth({name, password:p1, avatar:PENDING_AVATAR});
+  localStorage.setItem('tj_session','1');
+  AUTHED=true; boot();
 }
-
-
-function showCreateAccount(){
-  localStorage.removeItem('tj_auth');
-  PENDING_AVATAR=null;
-  renderAuthScreen();
+function doLogin(){
+  const auth=loadAuth();
+  const p=document.getElementById('loginPass').value;
+  if(!auth || p!==auth.password){document.getElementById('authErr').textContent='Incorrect password.';return;}
+  localStorage.setItem('tj_session','1');
+  AUTHED=true; boot();
 }
-
-
-function logout(){
-  localStorage.removeItem('tj_auth');
-  AUTHED=false;
-  renderAuthScreen();
-}
-
-
+function logout(){ localStorage.removeItem('tj_session'); AUTHED=false; AUTH_VIEW='login'; renderAuthScreen(); }
 function updateAvatar(files){
-  const f=files[0];
-
-  if(!f)return;
-
+  const f=files[0]; if(!f)return;
   const r=new FileReader();
-
-  r.onload=e=>{
-    const a=loadAuth()||{};
-    a.avatar=e.target.result;
-    saveAuth(a);
-    boot();
-  };
-
+  r.onload=e=>{ const a=loadAuth()||{}; a.avatar=e.target.result; saveAuth(a); boot(); };
   r.readAsDataURL(f);
 }
+
+function renderShell(){
+  const auth=loadAuth()||{};
+  document.getElementById('root').innerHTML=`
+    <div id="app">
+      <aside class="sidebar">
+        <div class="brand">📊 ${CHANNEL_NAME}</div>
+        <div class="avatarrow">
+          <label class="avatar" for="sideAvaInput">${auth.avatar?`<img src="${auth.avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</label>
+          <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
+          <div class="avatarname">${auth.name||'Trader'}</div>
+          <button class="logoutbtn" onclick="logout()">Log out</button>
+        </div>
+        <div class="pairbox">
+          <label>Currency Pair</label>
+          <select id="pairSelect"></select>
+          <button class="addpair" id="addPairBtn">+ Add Pair</button>
+        </div>
+        <nav id="navBtns"></nav>
+      </aside>
+      <main id="main"></main>
+    </div>`;
+}
+function boot(){
+  if(!AUTHED){ renderAuthScreen(); return; }
+  renderShell();
+  renderAll();
+}
+
 const TABS=[
   ['dashboard','📊 Dashboard'],['journal','📓 Journal'],['statistics','📈 Statistics'],
   ['todo','✅ To-Do'],['rules','⚠️ Rules'],['review','🖼️ Trade Review'],['risk','🧮 Risk Calculator'],
@@ -676,7 +540,7 @@ function renderDashboard(){
         <h2>🔗 Quick Links</h2>
         <div class="linkrow">
           <a href="https://www.forexfactory.com/calendar" target="_blank">📅 Forex Factory — Economic Calendar</a>
-          <a href="https://claude.ai/artifact/4rkpbFUxk9dAEyeVqJVSJw" target="_blank">🔗 Open This Journal (shareable link)</a>
+          <a href="${APP_LINK}" target="_blank">🔗 Open This Journal (shareable link)</a>
         </div>
       </div>
     </div>
@@ -1010,81 +874,92 @@ function saveRisk(){
 
 function renderLinks(){
   document.getElementById('main').innerHTML=`
-    <h1>Share & Install</h1>
-    <div class="sub">Share your journal link or install DDK's Trading Journal as an app.</div>
-
+    <h1>Share &amp; Install</h1>
+    <div class="sub">Get this journal onto any device — share the link, or save your own offline copy</div>
     <div class="panel">
-      <h2>🔗 Share the Journal</h2>
-      <div class="note">Share the live DDK's Trading Journal link with someone.</div>
-      <button class="btn" style="margin-top:12px" onclick="copyLink()">📤 Share Journal Link</button>
-      <div id="copyMsg" class="note" style="margin-top:10px"></div>
-    </div>
-
-    <div class="panel">
-      <h2>📲 Install the App</h2>
-      <div class="note">Install DDK's Trading Journal as an app on your phone or computer.</div>
-      <button id="pwaInstallBtn" class="btn" style="margin-top:12px" onclick="installDDKApp()">⬇️ Install DDK's Trading Journal</button>
-      <div class="note" style="margin-top:10px">
-        If the button does not work, open the Edge menu and choose <b>Apps → Install DDK's Trading Journal</b>.
+      <h2>🔗 Your Journal Link</h2>
+      <div class="row" style="align-items:center">
+        <input type="text" id="linkBox" value="${APP_LINK}" readonly
+          style="flex:1;min-width:220px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;font-size:13px;">
+        <button class="btn" onclick="copyLink()">Copy Link</button>
       </div>
+      <div id="copyMsg" style="font-size:12px;color:var(--green);margin-top:6px;height:14px;"></div>
     </div>
-
-    <div class="panel">
-      <h2>💻 Your Private App</h2>
-      <div class="note">Your journal data is stored locally on this device.</div>
-      <div class="note" style="margin-top:10px">For privacy, keep your app folder somewhere only you and your trusted friends can access.</div>
-    </div>
-
     <div class="grid2">
       <div class="panel">
-        <h2>🚀 How to Open</h2>
-        <div class="note">Open DDK's Trading Journal from your desktop or browser.</div>
+        <h2>📱 Scan to Open</h2>
+        <div id="qrcode" style="display:flex;justify-content:center;align-items:center;min-height:180px;padding:10px;background:#fff;border-radius:10px;width:fit-content;"></div>
+        <div class="note" style="margin-top:10px">Scan with a phone camera to open the journal instantly.</div>
       </div>
       <div class="panel">
-        <h2>📌 Put It on Your Desktop</h2>
-        <div class="note">Right-click the launcher → Show more options → Send to → Desktop (create shortcut).</div>
+        <h2>⬇️ Download Offline Copy</h2>
+        <div class="note">Save a standalone file to this device. Once downloaded, it opens straight from your files or desktop — no link, no internet needed to log your trades.</div>
+        <button class="btn" style="margin-top:12px" onclick="downloadAppCopy()">Download Journal (.html)</button>
       </div>
     </div>
-
     <div class="panel">
-      <h2>🔒 Offline & Private</h2>
-      <div class="note">Your trades, checklists, rules and risk settings are stored locally in your browser.</div>
+      <h2>📲 Add to Home Screen / Desktop</h2>
+      <div class="grid2">
+        <div>
+          <b style="font-size:13px">On Android</b>
+          <div class="note" style="margin-top:6px">Open the link in Chrome → tap the ⋮ menu → "Add to Home screen" or "Install app".</div>
+        </div>
+        <div>
+          <b style="font-size:13px">On iPhone</b>
+          <div class="note" style="margin-top:6px">Open the link in Safari → tap the Share icon → "Add to Home Screen".</div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <b style="font-size:13px">On PC / Mac</b>
+        <div class="note" style="margin-top:6px">Download the .html file above and pin it to your desktop or taskbar — double-click any time to open it, fully offline.</div>
+      </div>
     </div>
   `;
+  setTimeout(renderQR, 30);
 }
 function copyLink(){
-function copyLink(){
-  const link = window.location.href;
-
-  if (navigator.share) {
-    navigator.share({
-      title: "DDK's Trading Journal",
-      text: "Check out DDK's Trading Journal",
-      url: link
-    }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(link).then(() => {
-      const m = document.getElementById('copyMsg');
-      if(m){
-        m.textContent = 'Journal link copied!';
-        setTimeout(() => {
-          m.textContent = '';
-        }, 2200);
-      }
-    });
+  const box=document.getElementById('linkBox');
+  box.select(); box.setSelectionRange(0,999);
+  let ok=false;
+  try{ navigator.clipboard.writeText(APP_LINK); ok=true; }catch(e){}
+  if(!ok){ try{ document.execCommand('copy'); ok=true; }catch(e){} }
+  const m=document.getElementById('copyMsg');
+  if(m){ m.textContent= ok? 'Copied!' : 'Select and copy manually.'; setTimeout(()=>{ if(m) m.textContent=''; },1800); }
+}
+function renderQR(){
+  const el=document.getElementById('qrcode');
+  if(!el) return;
+  el.innerHTML='';
+  if(typeof QRCode==='undefined'){
+    el.innerHTML='<div style="color:#333;font-size:12px;padding:20px;max-width:160px;text-align:center">QR code needs an internet connection to load once.</div>';
+    return;
   }
+  new QRCode(el, {text:APP_LINK, width:160, height:160, colorDark:'#0a0e14', colorLight:'#ffffff'});
 }
-}
-function downloadAppCopy(){
+async function downloadAppCopy(){
   const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
-  const blob=new Blob([html], {type:'text/html;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='DDKs-Trading-Journal.html';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  let downloads=null;
+  try{ if(typeof claude!=='undefined' && claude.use) downloads = await claude.use("downloads"); }catch(e){}
+  if(downloads){
+    try{
+      await downloads.save({filename:'DDKs-Trading-Journal.html', data: new Blob([html], {type:'text/html'})});
+    }catch(e){
+      if(e && e.code==='declined') return;
+      alert("Couldn't save the file: "+(e && e.message ? e.message : 'unknown error'));
+    }
+    return;
+  }
+  // Normal browser (e.g. GitHub Pages) — plain download works natively here.
+  try{
+    const blob=new Blob([html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='DDKs-Trading-Journal.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }catch(e){
+    alert("Couldn't save the file: "+(e && e.message ? e.message : 'unknown error'));
+  }
 }
 
 function renderAll(){
@@ -1101,30 +976,5 @@ function renderAll(){
 boot();
 trySync().then(()=>{ if(AUTHED) boot(); else renderAuthScreen(); });
 </script>
-
-
-<script>
-(function(){
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  }
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault(); deferredPrompt = e;
-    const btn=document.getElementById('pwaInstallBtn');
-    if(btn){ btn.style.display='inline-block'; }
-  });
-  window.installDDKApp = async function(){
-    if(!deferredPrompt){
-     alert("If the Install button is not available, use your browser menu and choose 'Install DDK Trading Journal' or 'Add to Home Screen'.");
-      return;
-    }
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt=null;
-    const btn=document.getElementById('pwaInstallBtn'); if(btn) btn.style.display='none';
-  };
-  window.addEventListener('appinstalled', ()=>{ const btn=document.getElementById('pwaInstallBtn'); if(btn) btn.style.display='none'; });
-})();
-</script>
-</body></html>
+</body>
+</html>
