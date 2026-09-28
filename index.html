@@ -934,13 +934,26 @@ function renderLinks(){
   setTimeout(renderQR, 30);
 }
 function copyLink(){
-  const box=document.getElementById('linkBox');
-  box.select(); box.setSelectionRange(0,999);
-  let ok=false;
-  try{ navigator.clipboard.writeText(APP_LINK); ok=true; }catch(e){}
-  if(!ok){ try{ document.execCommand('copy'); ok=true; }catch(e){} }
   const m=document.getElementById('copyMsg');
-  if(m){ m.textContent= ok? 'Copied!' : 'Select and copy manually.'; setTimeout(()=>{ if(m) m.textContent=''; },1800); }
+  function showOk(){ if(m){ m.textContent='Copied!'; setTimeout(()=>{ if(m) m.textContent=''; },1800); } }
+  function showFail(){ if(m){ m.textContent='Could not auto-copy — tap and hold the link above to copy it.'; setTimeout(()=>{ if(m) m.textContent=''; },3000); } }
+  function fallbackCopy(){
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=APP_LINK;
+      ta.style.position='fixed'; ta.style.top='0'; ta.style.left='0'; ta.style.opacity='0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select(); ta.setSelectionRange(0, APP_LINK.length);
+      const success=document.execCommand('copy');
+      document.body.removeChild(ta);
+      success? showOk() : showFail();
+    }catch(e){ showFail(); }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(APP_LINK).then(showOk).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
 }
 function renderQR(){
   const el=document.getElementById('qrcode');
