@@ -171,7 +171,26 @@ body::before{content:"Patience + Discipline + Consistency = Success";position:fi
 <body>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
+const firebaseConfig={
+  apiKey:"AIzaSyAe4_C9yYmL66qVHJwU9CVJpjnMw9BJuG8",
+  authDomain:"ddk-s-trading-journal.firebaseapp.com",
+  projectId:"ddk-s-trading-journal",
+  storageBucket:"ddk-s-trading-journal.firebasestorage.app",
+  messagingSenderId:"128285110660",
+  appId:"1:128285110660:web:81cfc797df6a381d9d6dd1"
+};
+let fbAuth=null, fbDB=null, FIREBASE_OK=false;
+try{
+  firebase.initializeApp(firebaseConfig);
+  fbAuth=firebase.auth();
+  fbDB=firebase.firestore();
+  FIREBASE_OK=true;
+}catch(e){ FIREBASE_OK=false; }
+
 const APP_LINK="https://dorcas-kupler.github.io/ddks-trading-journal/";
 const CHANNEL_NAME="DDK's Trading Journal";
 const QUOTES=[
@@ -207,86 +226,82 @@ function sessionStatus(){
     {name:'New York',open:inRange(12,21)},
   ];
 }
-function loadAuth(){ try{return JSON.parse(localStorage.getItem('tj_auth'));}catch(e){return null;} }
-function saveAuthLocal(a){ localStorage.setItem('tj_auth', JSON.stringify(a)); }
-function saveAuth(a){ saveAuthLocal(a); pushRemote(); }
-let AUTHED= localStorage.getItem('tj_session')==='1' && !!loadAuth();
-let PENDING_AVATAR='';
-let AUTH_VIEW= loadAuth() ? 'login' : 'create';
+// ---- Real auth + cross-device sync via Firebase ----
+let CURRENT_USER=null;
+let AUTHED=false;
+let AUTH_MODE='login';
+function loadAvatar(uid){ try{return localStorage.getItem('tj_avatar_'+uid)||'';}catch(e){return '';} }
+function saveAvatarLocal(uid,dataUrl){ try{localStorage.setItem('tj_avatar_'+uid, dataUrl);}catch(e){} }
+
+function friendlyAuthError(code){
+  const map={
+    'auth/email-already-in-use':'That email already has an account — try logging in instead.',
+    'auth/invalid-email':'Please enter a valid email address.',
+    'auth/weak-password':'Password should be at least 6 characters.',
+    'auth/user-not-found':'No account found with that email.',
+    'auth/wrong-password':'Incorrect password.',
+    'auth/invalid-credential':'Incorrect email or password.',
+    'auth/too-many-requests':'Too many attempts — please wait a moment and try again.',
+  };
+  return map[code] || 'Something went wrong. Please try again.';
+}
 
 function renderAuthScreen(){
   const root=document.getElementById('root');
-  const auth=loadAuth();
-  if(AUTH_VIEW==='login' && auth){
-    root.innerHTML=`<div class="authwrap"><div class="authcard">
-      <div class="authavatar">${auth.avatar?`<img src="${auth.avatar}">`:'👤'}</div>
-      <h1>${CHANNEL_NAME}</h1>
-      <div class="sub">Welcome back${auth.name?', '+auth.name:''}</div>
-      <div class="authfield"><label>Password</label><input type="password" id="loginPass"></div>
-      <div class="autherr" id="authErr"></div>
-      <button class="btn" style="width:100%" onclick="doLogin()">Log In</button>
-      <button class="logoutbtn" style="width:100%;margin-top:10px" onclick="AUTH_VIEW='create';renderAuthScreen();">Not you? Create a new account</button>
+  if(!FIREBASE_OK){
+    root.innerHTML=`<div class="authwrap"><div class="authcard"><h1>${CHANNEL_NAME}</h1>
+      <div class="autherr">Sign-in service failed to load. Check your internet connection and reload the page.</div>
     </div></div>`;
-    const passInput=document.getElementById('loginPass');
-    passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+    return;
+  }
+  const isSignup=AUTH_MODE==='signup';
+  root.innerHTML=`<div class="authwrap"><div class="authcard">
+    <div class="authavatar">👤</div>
+    <h1>${CHANNEL_NAME}</h1>
+    <div class="sub">${isSignup?'Create your account':'Log in to your account'}</div>
+    <div class="authfield"><label>Email</label><input type="email" id="authEmail" placeholder="you@example.com"></div>
+    <div class="authfield"><label>Password</label><input type="password" id="authPass"></div>
+    ${isSignup?'<div class="authfield"><label>Confirm password</label><input type="password" id="authPass2"></div>':''}
+    <div class="autherr" id="authErr"></div>
+    <button class="btn" style="width:100%" onclick="doAuthSubmit()">${isSignup?'Create Account':'Log In'}</button>
+    <button class="logoutbtn" style="width:100%;margin-top:10px" onclick="AUTH_MODE='${isSignup?'login':'signup'}';renderAuthScreen();">${isSignup?'Already have an account? Log in':"New here? Create an account"}</button>
+  </div></div>`;
+  const last=document.getElementById(isSignup?'authPass2':'authPass');
+  last.addEventListener('keydown',e=>{if(e.key==='Enter')doAuthSubmit();});
+}
+function doAuthSubmit(){
+  const email=document.getElementById('authEmail').value.trim();
+  const p1=document.getElementById('authPass').value;
+  const errEl=document.getElementById('authErr');
+  errEl.textContent='';
+  if(!email || !email.includes('@')){errEl.textContent='Please enter a valid email.';return;}
+  if(!p1){errEl.textContent='Please enter your password.';return;}
+  if(AUTH_MODE==='signup'){
+    const p2=document.getElementById('authPass2').value;
+    if(p1!==p2){errEl.textContent='Passwords do not match.';return;}
+    fbAuth.createUserWithEmailAndPassword(email,p1).catch(e=>{errEl.textContent=friendlyAuthError(e.code);});
   } else {
-    root.innerHTML=`<div class="authwrap"><div class="authcard">
-      <div class="authavatar" id="avaClick">${PENDING_AVATAR?`<img src="${PENDING_AVATAR}">`:'👤'}</div>
-      <input type="file" id="avaInput" accept="image/*" style="display:none">
-      <h1>${CHANNEL_NAME}</h1>
-      <div class="sub">Create your account</div>
-      <div class="authfield"><label>Name</label><input type="text" id="setName" placeholder="e.g. DDK"></div>
-      <div class="authfield"><label>Password</label><input type="password" id="setPass"></div>
-      <div class="authfield"><label>Confirm password</label><input type="password" id="setPass2"></div>
-      <div class="autherr" id="authErr"></div>
-      <button class="btn" style="width:100%" onclick="doCreateAccount()">Create Account</button>
-      ${auth?`<button class="logoutbtn" style="width:100%;margin-top:10px" onclick="AUTH_VIEW='login';renderAuthScreen();">← Back to log in</button>`:''}
-    </div></div>`;
-    const passInput=document.getElementById('setPass2');
-    passInput.addEventListener('keydown',e=>{if(e.key==='Enter')doCreateAccount();});
-    const avaClick=document.getElementById('avaClick');
-    avaClick.onclick=()=>document.getElementById('avaInput').click();
-    document.getElementById('avaInput').onchange=function(){
-      const f=this.files[0]; if(!f)return;
-      const r=new FileReader(); r.onload=e=>{PENDING_AVATAR=e.target.result; renderAuthScreen();}; r.readAsDataURL(f);
-    };
+    fbAuth.signInWithEmailAndPassword(email,p1).catch(e=>{errEl.textContent=friendlyAuthError(e.code);});
   }
 }
-function doCreateAccount(){
-  const name=document.getElementById('setName').value.trim();
-  const p1=document.getElementById('setPass').value, p2=document.getElementById('setPass2').value;
-  if(!name){document.getElementById('authErr').textContent='Please enter your name.';return;}
-  if(!p1){document.getElementById('authErr').textContent='Please set a password.';return;}
-  if(p1!==p2){document.getElementById('authErr').textContent='Passwords do not match.';return;}
-  saveAuth({name, password:p1, avatar:PENDING_AVATAR});
-  localStorage.setItem('tj_session','1');
-  AUTHED=true; boot();
-}
-function doLogin(){
-  const auth=loadAuth();
-  const p=document.getElementById('loginPass').value;
-  if(!auth || p!==auth.password){document.getElementById('authErr').textContent='Incorrect password.';return;}
-  localStorage.setItem('tj_session','1');
-  AUTHED=true; boot();
-}
-function logout(){ localStorage.removeItem('tj_session'); AUTHED=false; AUTH_VIEW='login'; renderAuthScreen(); }
+function logout(){ fbAuth.signOut(); }
 function updateAvatar(files){
-  const f=files[0]; if(!f)return;
+  const f=files[0]; if(!f || !CURRENT_USER)return;
   const r=new FileReader();
-  r.onload=e=>{ const a=loadAuth()||{}; a.avatar=e.target.result; saveAuth(a); boot(); };
+  r.onload=e=>{ saveAvatarLocal(CURRENT_USER.uid, e.target.result); boot(); };
   r.readAsDataURL(f);
 }
 
 function renderShell(){
-  const auth=loadAuth()||{};
+  const avatar=CURRENT_USER? loadAvatar(CURRENT_USER.uid) : '';
   document.getElementById('root').innerHTML=`
     <div id="app">
       <aside class="sidebar">
         <div class="brand">📊 ${CHANNEL_NAME}</div>
         <div class="avatarrow">
-          <label class="avatar" for="sideAvaInput">${auth.avatar?`<img src="${auth.avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</label>
+          <label class="avatar" for="sideAvaInput">${avatar?`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover">`:'👤'}</label>
           <input type="file" id="sideAvaInput" accept="image/*" style="display:none" onchange="updateAvatar(this.files)">
-          <div class="avatarname">${auth.name||'Trader'}</div>
+          <div class="avatarname">${CURRENT_USER? CURRENT_USER.email : 'Trader'}</div>
           <button class="logoutbtn" onclick="logout()">Log out</button>
         </div>
         <div class="pairbox">
@@ -299,10 +314,73 @@ function renderShell(){
       <main id="main"></main>
     </div>`;
 }
+function renderLoading(){
+  document.getElementById('root').innerHTML=`<div class="authwrap"><div class="authcard" style="text-align:center">
+    <h1>${CHANNEL_NAME}</h1><div class="sub">Loading…</div>
+  </div></div>`;
+}
 function boot(){
   if(!AUTHED){ renderAuthScreen(); return; }
   renderShell();
   renderAll();
+}
+
+// ---- Cross-device data sync via Firestore ----
+let pushTimer=null;
+function buildSyncPayload(){
+  const state={current:STATE.current, customPairs:STATE.customPairs||[], data:{}};
+  for(const p in STATE.data){
+    const d=STATE.data[p];
+    state.data[p]={trades:d.trades, todos:d.todos, todoDate:d.todoDate, rules:d.rules, goldenRules:d.goldenRules, risk:d.risk};
+  }
+  return state;
+}
+function applySyncPayload(remote){
+  if(!remote) return;
+  STATE.current=remote.current||STATE.current;
+  STATE.customPairs=remote.customPairs||STATE.customPairs||[];
+  for(const p in (remote.data||{})){
+    const r=remote.data[p];
+    const localImages=(STATE.data[p] && STATE.data[p].images) || {good:[],bad:[]};
+    STATE.data[p]=Object.assign({goldenRules:[...DEFAULT_GOLDEN_RULES]}, r, {images:localImages});
+  }
+  localStorage.setItem('tj_state_v1', JSON.stringify(STATE));
+}
+function pushRemote(){
+  if(!CURRENT_USER || !fbDB) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>{
+    fbDB.collection('journals').doc(CURRENT_USER.uid).set(buildSyncPayload()).catch(()=>{});
+  }, 500);
+}
+let unsubscribeSnapshot=null;
+async function loadUserData(uid){
+  try{
+    const doc=await fbDB.collection('journals').doc(uid).get();
+    if(doc.exists){ applySyncPayload(doc.data()); }
+    else { await fbDB.collection('journals').doc(uid).set(buildSyncPayload()).catch(()=>{}); }
+  }catch(e){}
+  if(unsubscribeSnapshot) unsubscribeSnapshot();
+  unsubscribeSnapshot=fbDB.collection('journals').doc(uid).onSnapshot(doc=>{
+    if(doc.metadata && doc.metadata.hasPendingWrites) return;
+    if(doc.exists){ applySyncPayload(doc.data()); if(AUTHED) renderAll(); }
+  });
+}
+
+renderLoading();
+if(FIREBASE_OK){
+  fbAuth.onAuthStateChanged(async function(user){
+    CURRENT_USER=user;
+    if(user){
+      await loadUserData(user.uid);
+      AUTHED=true;
+    } else {
+      AUTHED=false;
+    }
+    boot();
+  });
+} else {
+  boot();
 }
 
 const TABS=[
@@ -405,67 +483,6 @@ function loadState(){
 let STATE=loadState();
 let TAB='dashboard';
 function save(){ localStorage.setItem('tj_state_v1', JSON.stringify(STATE)); pushRemote(); }
-
-// ---- Cross-device sync (via db/user capabilities, when signed in) ----
-let DB=null, DBDOC=null, UID=null, SYNCED=false, pushTimer=null;
-function buildSyncPayload(){
-  const a=loadAuth()||{};
-  const auth={name:a.name||'', email:a.email||'', password:a.password||''};
-  const state={current:STATE.current, customPairs:STATE.customPairs||[], data:{}};
-  for(const p in STATE.data){
-    const d=STATE.data[p];
-    state.data[p]={trades:d.trades, todos:d.todos, todoDate:d.todoDate, rules:d.rules, goldenRules:d.goldenRules, risk:d.risk};
-  }
-  return {auth, state};
-}
-function applySyncPayload(payload){
-  if(!payload) return;
-  if(payload.auth){
-    const local=loadAuth()||{};
-    saveAuthLocal(Object.assign({}, local, payload.auth));
-  }
-  if(payload.state){
-    STATE.current=payload.state.current||STATE.current;
-    STATE.customPairs=payload.state.customPairs||STATE.customPairs||[];
-    for(const p in payload.state.data){
-      const remote=payload.state.data[p];
-      const localImages=(STATE.data[p] && STATE.data[p].images) || {good:[],bad:[]};
-      STATE.data[p]=Object.assign({goldenRules:[...DEFAULT_GOLDEN_RULES]}, remote, {images:localImages});
-    }
-    localStorage.setItem('tj_state_v1', JSON.stringify(STATE));
-  }
-}
-function pushRemote(){
-  if(!DBDOC) return;
-  clearTimeout(pushTimer);
-  pushTimer=setTimeout(()=>{ DBDOC.set(buildSyncPayload()).catch(()=>{}); }, 500);
-}
-async function trySync(){
-  try{
-    if(typeof claude==='undefined' || !claude.use) return;
-    const userNS=await claude.use("user");
-    if(userNS && userNS.id) UID=await userNS.id();
-  }catch(e){}
-  if(!UID) return;
-  try{ DB=await claude.use("db"); }catch(e){}
-  if(!DB) return;
-  try{
-    DBDOC=DB.doc('data/users/'+UID+'/journal');
-    const snap=await DBDOC.get();
-    if(snap && snap.exists && snap.data()){
-      applySyncPayload(snap.data());
-    } else {
-      await DBDOC.set(buildSyncPayload()).catch(()=>{});
-    }
-    SYNCED=true;
-    DBDOC.onSnapshot(function(doc){
-      if(!doc || !doc.exists) return;
-      if(doc.metadata && doc.metadata.hasPendingWrites) return;
-      applySyncPayload(doc.data());
-      if(AUTHED) renderAll();
-    }, function(){});
-  }catch(e){}
-}
 function cur(){ return STATE.data[STATE.current]; }
 function fmt$(n){ n=Number(n)||0; const s=n<0?'-':'+'; return s+'$'+Math.abs(n).toFixed(2); }
 
@@ -514,14 +531,13 @@ function checkTodoReset(){
 }
 
 function renderDashboard(){
-  const auth=loadAuth()||{};
   const [qtext,qauth]=quoteOfDay();
   const sessions=sessionStatus();
   const rules=cur().rules;
   document.getElementById('main').innerHTML=`
     <div class="dashtop">
       <div>
-        <h1>Welcome back${auth.name?', '+auth.name:''} 👋</h1>
+        <h1>Welcome back${CURRENT_USER?', '+CURRENT_USER.email.split('@')[0]:''} 👋</h1>
         <div class="sub">${CHANNEL_NAME} — ${new Date().toLocaleDateString('en',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
       </div>
       <div class="quotecard">
@@ -973,8 +989,6 @@ function renderAll(){
   else if(TAB==='risk') renderRisk();
   else if(TAB==='links') renderLinks();
 }
-boot();
-trySync().then(()=>{ if(AUTHED) boot(); else renderAuthScreen(); });
 </script>
 </body>
 </html>
